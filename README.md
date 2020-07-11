@@ -1,2 +1,2 @@
 # Pepas
-Secuenciador generativo de VC, gates y triggers basado en Arduino para sintetizadores modulares.
+Secuenciador generativo de CV, gates y triggers basado en Arduino para sintetizadores modulares.
