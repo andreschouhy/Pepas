@@ -9,6 +9,7 @@ Actualmente posee 4 canales independientes y sincronizables:
   - una salida analógica de CV aleatorio (por ejemplo para controlar cambios de amplitud de un VCA o variar aleatoriamente un VCF, etc)
   - una salida digital de trigger
   - una salida digital de gate
-- 2 canales de square envelope (encontrar una traducción de este termino):
+- 2 canales de square envelope (encontrar una traducción coherente para este termino):
   - una salida digital cada uno
 
+Modus operandi:
