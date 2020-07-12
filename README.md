@@ -16,3 +16,7 @@ Modus operandi:
 - Notas musicales: 34 notas posibles se distribuyen a lo largo de las teclas de letras y números de la siguiente manera:
   - notas "blancas" (de un teclado musical tradicional) en las fila desde "Z" hasta "-" y desde "Q" hasta "P"
   - notas "negras" (de un teclado musical tradicional) en las filas desde "A" hasta "Ñ" y desde "1" hasta "0" (excluyendo "A", "F", "K", "1", "4" y "8")
+- "TAB" selecciona el canal actual
+- "BLOCK MAYUS" alterna entre 2 modos de accionar notas:
+  - uno en el que se accionan las notas que están siendo presionas
+  - otro en el que se mantienen activas las notas que se presionaron desde que se presiona la primera nota hasta que ya no hay notas presionadas, luego de esto se reinicia el grupo de notas al presionar la primera de un nuevo grupo de notas.
