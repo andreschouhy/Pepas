@@ -17,7 +17,20 @@ Modus operandi:
   - notas "blancas" (de un teclado musical tradicional) en las fila desde "Z" hasta "-" y desde "Q" hasta "P"
   - notas "negras" (de un teclado musical tradicional) en las filas desde "A" hasta "Ñ" y desde "1" hasta "0" (excluyendo "A", "F", "K", "1", "4" y "8")
 - Duración del ciclo de square envelope (para los canales de square envelope): 0-100% distribuido en las mismas teclas que las notas musicales.
-- "TAB" selecciona el canal actual
+- "TAB" selecciona el canal actual (los 2 LEDs de la derecha del grupo de 3 LEDs del teclado funcionan como indicador del canal actual en formato binario desde el canal 0 al canal 3)
+- El LED de la izquierda del grupo de 3 LEDs del teclado indica cuándo una nota de está disparando.
 - "BLOCK MAYUS" alterna entre 2 modos de accionar notas:
   - uno en el que se accionan las notas que están siendo presionas
   - otro en el que se mantienen activas las notas que se presionaron desde que se presiona la primera nota hasta que ya no hay notas presionadas, luego de esto se reinicia el grupo de notas al presionar la primera de un nuevo grupo de notas.
+- "ESPACIO"
+- "BORRAR"
+- "'" (la tecla a la izquierda del "1")
+- "CTRL"
+- "ALT"
+- "SHIFT"
+- "FLECHA ARRIBA" y "FLECHA ABAJO"
+- "ESC"
+- "F1"
+- "F2"
+- "F5" hasta "F6"
+- "*" y "/" (del teclado numérico)
