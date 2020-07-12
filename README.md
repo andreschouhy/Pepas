@@ -13,3 +13,6 @@ Actualmente posee 4 canales independientes y sincronizables:
   - una salida digital cada uno
 
 Modus operandi:
+- Notas musicales: 34 notas posibles se distribuyen a lo largo de las teclas de letras y números de la siguiente manera:
+  - notas "blancas" (de un teclado musical tradicional) en las fila desde "Z" hasta "-" y desde "Q" hasta "P"
+  - notas "negras" (de un teclado musical tradicional) en las filas desde "A" hasta "Ñ" y desde "1" hasta "0" (excluyendo "A", "F", "K", "1", "4" y "8")
