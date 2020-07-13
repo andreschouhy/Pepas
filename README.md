@@ -16,7 +16,7 @@ Actualmente posee 4 canales independientes y sincronizables:
 # Requerimientos
 - Arduino UNO
 - Teclado de computadora PS/2 (yo estoy usando uno en español)
-- Circuito de conversion digital a analogico (yo estoy usando algo asi https://www.instructables.com/id/Another-MIDI-to-CV-Box-/)
+- Un circuito de conversion digital a analogico por cada salida analógica, en total son 4: 2 por cada canal de CV (yo estoy usando algo asi https://www.instructables.com/id/Another-MIDI-to-CV-Box-/)
 
 # Modus operandi
 En los canales de CV, básicamente, uno activa un grupo de notas mediante el uso del teclado, a las que llamaremos "escala", y Pepas dispara aleatoriamente cualquiera de esas notas. La cantidad de notas de una escala puede ser desde 1 hasta 16 notas (podrían ser más si pudiera, sospecho que hay un problema con el límite de memoria del Arduino UNO). 
