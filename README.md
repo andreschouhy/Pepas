@@ -13,6 +13,11 @@ Actualmente posee 4 canales independientes y sincronizables:
   - una salida digital cada uno
 - 1 entrada analógica de potenciómetro, para control fino de ciertos parámetros
 
+# Requerimientos
+- Arduino UNO
+- Teclado de computadora PS/2 (yo estoy usando uno en español)
+- Circuito de conversion digital a analogico (yo estoy usando algo asi https://www.instructables.com/id/Another-MIDI-to-CV-Box-/)
+
 # Modus operandi
 En los canales de CV, básicamente, uno activa un grupo de notas mediante el uso del teclado, a las que llamaremos "escala", y Pepas dispara aleatoriamente cualquiera de esas notas. La cantidad de notas de una escala puede ser desde 1 hasta 16 notas (podrían ser más si pudiera, sospecho que hay un problema con el límite de memoria del Arduino UNO). 
 De la misma forma, en los canales de square envelope, en lugar de notas se selecciona cuanto dura el ciclo digital entre 0 y 1, desde 0% (activando la "nota" más baja) hasta 100% (activando la "nota" más alta). Éstos canales pueden usarse como salida de clock para otros módulos, ya que son sincronizables en tempo con el resto de los canales. También pueden usarse para activar y desactivar ciertos módulos por medio de gates.
