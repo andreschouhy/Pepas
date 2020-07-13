@@ -44,16 +44,12 @@ Los parámetros más importantes son:
 - "ESPACIO" alterna entre el modo de secuencias aleatorias y secuencias fijas
 - "BORRAR" resetea la secuencia (para el modo de secuencias fijas)
 - "'" (la tecla a la izquierda del "1") sincroniza el tiempo de todos los canales
-- "CTRL" tiene distintas funciones dependiendo de con qué se lo acompañe:
-  - a
-  - a
-  - a
-  - a
-- "ALT" tiene distintas funciones dependiendo de con qué se lo acompañe:
-  - a
-  - a
-  - a
-  - a
+- Manteniendo "CTRL" se puede:
+  - ingresar la cantidad de pasos de la secuencia fija, desde 1 hasta 64, utilizando el teclado numérico
+  - configurar el tempo mediante el uso del potenciómetro
+- Manteniendo "ALT" se puede:
+  - ingresar la cantidad de notas que tiene la escala, desde 1 hasta 16, utilizando el teclado numérico
+  - configurar la probabilidad de ejecución de notas mediante el uso del potenciómetro, desde 0% hasta 100%
 - "SHIFT" propaga todo lo que se hace en un canal a los demás canales
 - "FLECHA ARRIBA" y "FLECHA ABAJO" cambia de escala (sólo para los canales de CV)
 - "ESC" tap tempo (actualmente no está funcionando bien)
