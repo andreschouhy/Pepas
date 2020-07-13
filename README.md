@@ -44,15 +44,15 @@ Los parámetros más importantes son:
 - "BORRAR" resetea la secuencia (para el modo de secuencias fijas)
 - "'" (la tecla a la izquierda del "1") sincroniza el tiempo de todos los canales
 - "CTRL" tiene distintas funciones dependiendo de con qué se lo acompañe:
-  -
-  -
-  -
-  -
+  - a
+  - a
+  - a
+  - a
 - "ALT" tiene distintas funciones dependiendo de con qué se lo acompañe:
-  -
-  -
-  -
-  -
+  - a
+  - a
+  - a
+  - a
 - "SHIFT" propaga todo lo que se hace en un canal a los demás canales
 - "FLECHA ARRIBA" y "FLECHA ABAJO" cambia de escala (sólo para los canales de CV)
 - "ESC" tap tempo (actualmente no está funcionando bien)
