@@ -21,11 +21,11 @@ Los parámetros más importantes son:
 - La escala (el grupo de notas activadas)
 - La cantidad de notas de una escala (para el modo de secuencias fijas)
 - La cantidad de pasos de una secuencia (para el modo de secuencias fijas)
-- El tempo, configurable por BPM, por "tap tempo" o por potenciómetro
+- El tempo, configurable por BPM, por "tap tempo" o por potenciómetro. Es universal, todos los canales obedecen al mismo tempo, aunque las duraciones de notas de cada canal pueden ser distintas.
 - La probabilidad de ejecutar una nota, configurable mediante el potenciómetro
 - La probabilidad de alterar un paso de una secuencia (para el modo de secuencias fijas)
 
-
+# Mapa de teclas
 - Notas musicales (para los canales de CV): 34 notas posibles se distribuyen a lo largo de las teclas de letras y números de la siguiente manera:
   - notas "blancas" (de un teclado musical tradicional) en las fila desde "Z" hasta "-" y desde "Q" hasta "P"
   - notas "negras" (de un teclado musical tradicional) en las filas desde "A" hasta "Ñ" y desde "1" hasta "0" (excluyendo "A", "F", "K", "1", "4" y "8")
@@ -35,15 +35,15 @@ Los parámetros más importantes son:
 - "BLOCK MAYUS" alterna entre 2 modos de accionar notas:
   - uno en el que se accionan las notas que están siendo presionas
   - otro en el que se mantienen activas las notas que se presionaron desde que se presiona la primera nota hasta que ya no hay notas presionadas, luego de esto se reinicia el grupo de notas al presionar la primera de un nuevo grupo de notas.
-- "ESPACIO"
-- "BORRAR"
-- "'" (la tecla a la izquierda del "1")
+- "ESPACIO" alterna entre el modo de secuencias aleatorias y secuencias fijas
+- "BORRAR" resetea la secuencia (para el modo de secuencias fijas)
+- "'" (la tecla a la izquierda del "1") sincroniza el tiempo de todos los canales
 - "CTRL"
 - "ALT"
-- "SHIFT"
-- "FLECHA ARRIBA" y "FLECHA ABAJO"
-- "ESC"
-- "F1"
-- "F2"
-- "F5" hasta "F6"
-- "*" y "/" (del teclado numérico)
+- "SHIFT" propaga todo lo que se hace en un canal a los demás canales
+- "FLECHA ARRIBA" y "FLECHA ABAJO" cambia de escala (sólo para los canales de CV)
+- "ESC" tap tempo (actualmente no está funcionando bien)
+- "F1" configura el parámetro de mutación (para las secuencias fijas) mediante el uso del potenciómetro (presionar "F1" > mover potenciómetro > soltar "F1")
+- "F2" configura el tempo en BPM usando el teclado numerico (presionar "F2" > entrar BPM > soltar "F2")
+- "F5" hasta "F6" presets (actualmente sólo de escala, quizás en el futuro se implementen otros parámetros para presetear), esto permite progresiones de acordes (o más bien, arpegios basados en acordes)
+- "** " y "/" (del teclado numérico) multiplica y divide (respectivamente) la duración de los pasos de la secuencia por un número entero entrado por el teclado numérico (presionar "** " o "/" > entrar un número > soltar "** " o "/"). Por defecto en 1, si se multiplica por 2, por ejemplo, se disparan 2 notas en el mismo tiempo que antes se disparaba una.
