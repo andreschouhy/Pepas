@@ -11,8 +11,19 @@ Actualmente posee 4 canales independientes y sincronizables:
   - una salida digital de gate
 - 2 canales de square envelope (encontrar una traducción coherente para este termino):
   - una salida digital cada uno
+- 1 entrada analógica de potenciómetro, para control fino de ciertos parámetros
 
 Modus operandi:
+En los canales de CV, básicamente, uno activa un grupo de notas mediante el uso del teclado, a las que llamaremos "escala", y Pepas dispara aleatoriamente cualquiera de esas notas. La cantidad de notas de una escala puede ser desde 1 hasta 16 notas (podrían ser más si pudiera, sospecho que hay un problema con el límite de memoria del Arduino UNO).
+De la misma forma, en los canales de square envelope, en lugar de notas se selecciona cuanto dura el ciclo digital entre 0 y 1, desde 0% (activando la "nota" más baja) hasta 100% (activando la "nota" más alta). Éstos canales pueden usarse como salida de clock para otros módulos, ya que son sincronizables en tempo con el resto de los canales. También pueden usarse para activar y desactivar ciertos módulos por medio de gates.
+Los parámetros más importantes son: 
+- La escala (el grupo de notas activadas)
+- La cantidad de notas de una escala (para el modo de secuencias fijas)
+- La cantidad de pasos de una secuencia (para el modo de secuencias fijas)
+- El tempo, configurable por BPM, por "tap tempo" o por potenciómetro
+- La probabilidad de ejecutar una nota, configurable mediante el potenciómetro
+
+
 - Notas musicales (para los canales de CV): 34 notas posibles se distribuyen a lo largo de las teclas de letras y números de la siguiente manera:
   - notas "blancas" (de un teclado musical tradicional) en las fila desde "Z" hasta "-" y desde "Q" hasta "P"
   - notas "negras" (de un teclado musical tradicional) en las filas desde "A" hasta "Ñ" y desde "1" hasta "0" (excluyendo "A", "F", "K", "1", "4" y "8")
