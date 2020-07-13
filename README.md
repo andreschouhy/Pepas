@@ -15,7 +15,7 @@ Actualmente posee 4 canales independientes y sincronizables:
 
 # Requerimientos
 - Arduino UNO
-- Teclado de computadora PS/2 (yo estoy usando uno en español)
+- Teclado de computadora PS/2 (yo estoy usando un Genius en español, he probado otros que no funcionaban, no pude identificar por qué)
 - Un circuito de conversion digital a analogico por cada salida analógica, en total son 4: 2 por cada canal de CV (yo estoy usando algo asi https://www.instructables.com/id/Another-MIDI-to-CV-Box-/)
 
 # Modus operandi
