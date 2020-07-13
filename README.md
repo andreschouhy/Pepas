@@ -47,6 +47,7 @@ Los parámetros más importantes son:
 - Manteniendo "CTRL" se puede:
   - ingresar la cantidad de pasos de la secuencia fija, desde 1 hasta 64, utilizando el teclado numérico
   - configurar el tempo mediante el uso del potenciómetro
+  - guardar un preset (presionar "CTRL" > presionar "F5","F6","F7" o "F8" > soltar "CTRL")
 - Manteniendo "ALT" se puede:
   - ingresar la cantidad de notas que tiene la escala, desde 1 hasta 16, utilizando el teclado numérico
   - configurar la probabilidad de ejecución de notas mediante el uso del potenciómetro, desde 0% hasta 100%
@@ -55,5 +56,5 @@ Los parámetros más importantes son:
 - "ESC" tap tempo (actualmente no está funcionando bien)
 - "F1" configura el parámetro de mutación (para las secuencias fijas) mediante el uso del potenciómetro (presionar "F1" > mover potenciómetro > soltar "F1")
 - "F2" configura el tempo en BPM usando el teclado numerico (presionar "F2" > entrar BPM > soltar "F2")
-- "F5" hasta "F6" presets (actualmente sólo de escala, quizás en el futuro se implementen otros parámetros para presetear), esto permite progresiones de acordes (o más bien, arpegios basados en acordes)
+- "F5" hasta "F6" activar presets (actualmente sólo de escala, quizás en el futuro se implementen otros parámetros para presetear), esto permite progresiones de acordes (o más bien, arpegios basados en acordes)
 - "** " y "/" (del teclado numérico) multiplica y divide (respectivamente) la duración de los pasos de la secuencia por un número entero entrado por el teclado numérico (presionar "** " o "/" > entrar un número > soltar "** " o "/"). Por defecto en 1, si se multiplica por 2, por ejemplo, se disparan 2 notas en el mismo tiempo que antes se disparaba una.
