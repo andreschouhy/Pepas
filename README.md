@@ -61,6 +61,7 @@ Los parámetros más importantes son:
 
 # Fallas y cuestiones a mejorar
 - Creo que lo más urgente para optimizar es la comunicación con el teclado. Quizas probar otra librería.
+- Algunos teclados no funcionan, no pude identificar por qué. Quizás algun tema de protocolos. También podría solucionarse utilizando otra librería.
 - Ocasionalmente se cuelga. Quizás un problema de falta de memoria?
 - Ocasionalmente no cierra la escala y agrega todas las notas que se activan, a veces se soluciona presionando "TAB" 2 veces (forzando a cerrar la escala, reiniciándola).
 - El tempo no es preciso como un reloj, se desvía un poco (sospecho que la temperatura ambiente tiene que ver) aunque no es notorio luego de unos minutos de sincronizado. Se vuelve notorio luego de los 20-30 minutos aproximadamente, pero es improbable que se quiera mantener una precisión fuerte luego de tanto tiempo.
