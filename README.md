@@ -69,3 +69,4 @@ Los parámetros más importantes son:
 - Ocasionalmente no cierra la escala y agrega todas las notas que se activan, a veces se soluciona presionando "TAB" 2 veces (forzando a cerrar la escala, reiniciándola).
 - El tempo no es preciso como un reloj, se desvía un poco (sospecho que la temperatura ambiente tiene que ver) aunque no es notorio luego de unos minutos de sincronizado. Se vuelve notorio luego de los 20-30 minutos aproximadamente, pero es improbable que se quiera mantener una precisión fuerte luego de tanto tiempo.
 - Una buena incorporación sería una entrada de clock, para delegar el manejo del tiempo a otros sistemas más idóneos y precisos.
+- Quizás estaría bien agregar un modo de arpegio regular, no aleatorio, en el cual se podrían elegir arpegios ascendentes, descendentes, ping-pong, y algún otro.
