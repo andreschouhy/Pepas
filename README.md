@@ -43,7 +43,7 @@ Los parámetros más importantes son:
   - otro en el que se mantienen activas las notas que se presionaron desde que se presiona la primera nota hasta que ya no hay notas presionadas, luego de esto se reinicia el grupo de notas al presionar la primera de un nuevo grupo de notas.
 - "ESPACIO" alterna entre el modo de secuencias aleatorias y secuencias fijas
 - "BORRAR" resetea la secuencia (para el modo de secuencias fijas)
-- " ' " (el botón a la izquierda del "1") sincroniza el tiempo de todos los canales
+- " ' " (el botón a la izquierda del "1") sincroniza el tiempo de todos los canales tomando como master el canal actual (es decir, sin alterarlo)
 - Manteniendo "CTRL" se puede:
   - ingresar la cantidad de pasos de la secuencia fija, desde 1 hasta 64, utilizando el teclado numérico
   - configurar el tempo mediante el uso del potenciómetro
