@@ -70,3 +70,4 @@ Los parámetros más importantes son:
 - El tempo no es preciso como un reloj, se desvía un poco (sospecho que la temperatura ambiente tiene que ver) aunque no es notorio luego de unos minutos de sincronizado. Se vuelve notorio luego de los 20-30 minutos aproximadamente, pero es improbable que se quiera mantener una precisión fuerte luego de tanto tiempo.
 - Una buena incorporación sería una entrada de clock, para delegar el manejo del tiempo a otros sistemas más idóneos y precisos.
 - Quizás estaría bien agregar un modo de arpegio regular, no aleatorio, en el cual se podrían elegir arpegios ascendentes, descendentes, ping-pong, y algún otro.
+- Quizás alguna forma de guardar información más permanentemente, accesible luego de reiniciar el Arduino o de haber cambiado mucho las cosas. Aunque no sé si hecha a perder un poco el sentido de Pepas.
