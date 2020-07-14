@@ -14,6 +14,7 @@ Actualmente posee 4 canales independientes y sincronizables:
 - 1 entrada analógica de potenciómetro, para control fino de ciertos parámetros
 
 # Ejemplos de música creada con Pepas
+Mucha cháchara, mucha cháchara... pero vamo a lo bifes:
 - https://soundcloud.com/andreschouhy
 
 # Requerimientos
