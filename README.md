@@ -13,6 +13,9 @@ Actualmente posee 4 canales independientes y sincronizables:
   - una salida digital cada uno
 - 1 entrada analógica de potenciómetro, para control fino de ciertos parámetros
 
+# Ejemplos de música creada con Pepas
+- https://soundcloud.com/andreschouhy
+
 # Requerimientos
 - Arduino UNO
 - Teclado de computadora PS/2 (yo estoy usando un Genius KB-06XE en español, he probado otros que no funcionaban, no pude identificar por qué)
