@@ -1,7 +1,7 @@
 # Pepas
 Pepas es un módulo secuenciador generativo de CV, gates y triggers basado en Arduino para sintetizadores modulares. 
 Está diseñado para ser económico y accesible. Su corazón es un Arduino UNO, y se opera a través de un teclado de computadora PS/2. El resto son componentes básicos de electrónica como resistencias, capacitores y demás.
-Está diseñado en vistas a ser una herramienta de experimentación musical, mediante el caos controlado. Las secuencias producidas por Pepas son únicas e irrepetibles, y no son guardadas en ninguna memoria. Lo que sí es reproducible son los parámetros que controlan el caos. Por ello no está pensado para el compositor musical que sabe exactamente qué notas quiere y en dónde. Sino mas bien para el músico que quiere experimentar ágilmente con ciertos esquemas musicales. 
+Está diseñado en vistas a ser una herramienta de experimentación musical, mediante el caos controlado. Las secuencias producidas por Pepas son únicas e irrepetibles, y no son guardadas en ninguna memoria. Lo que sí es reproducible son los parámetros que controlan el caos. Por ello no está pensado para el compositor musical que sabe exactamente qué notas quiere y en dónde. Sino mas bien para el músico que quiere experimentar ágilmente con ciertos esquemas musicales. El sistema carece de pantallas y menúes complicados, todo está siempre al alcance de los botones. Los unicos indicadores que hay son los LEDs que posee el teclado (uno para indicar que se esta ejecutando una nota en el canal actual y los 2 restantes para indicar el canal actual en formato binario del 0 al 3, o en otras palabras del primero al cuarto). 
 
 Actualmente posee 4 canales independientes y sincronizables:
 - 2 canales de CV, y cada uno posee:
