@@ -149,3 +149,13 @@ Most important parameters are:
 - "F2" sets the tempo in BPM using the numpad (hold "F2" > enter BPM > release "F2")
 - "F5" to "F8" activate stored presets (only scale is stored, maybe in a future more paremeters gets implemented in the presets), this allows for chords progressions (actually, progressions of chord-based arpeggios).
 - " * " and " / " (from the numpad) multiplies or divides (respectively) the relative speed of the sequence steps by an integer number entered through the numpad (hold " * " or " / " > enter a number > release " * " or " / "). By default it's 1, if you multiply it by 2, for instance, 2 notes are executed in the same time that 1 was being executed.
+
+## Issues to improve
+- Most urgent issue is to optimize keyboard communication. Maybe try another library.
+- Some keyboards don't work, couldn't identify why. Maybe some protocol issue. Also might be solved using another library.
+- Occasionally it hangs. Maybe lack of enough memory?
+- Occasioanlly scales are not closed and keeps adding notes, sometimes it finally closes the scale when pressing "TAB" 2 times (hence forcing to close the scale, reseting it)
+- Tempo is not clock precise, it deviates a little (I suspect that ambient temperature has something to do) although is not so notorious after a few minutes from synchronization. It gets notorious after something like 20-30 minutes, but it is not so likely that someone wants that strong precision after that much time.
+- A good income would be a clock input, to delegate time handling to other more suitable and precise systems.
+- Maybe it would be nice to add a regular arpegio mode, nor tandom, in wich the user could pick from acsending , descending, ping-pong, and other tipes of arpeggios.
+- Maybe a way to store information more permanently, accesible after rebooting the Arduino or after having changed things a lot. Although I'm not sure if this spoils the point of Pepas.
