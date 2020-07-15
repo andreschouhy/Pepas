@@ -23,9 +23,11 @@ Mucha cháchara, mucha cháchara... pero vamo a lo bifes:
 - Teclado de computadora PS/2 (yo estoy usando un Genius KB-06XE en español, he probado otros que no funcionaban, no pude identificar por qué)
 - Un circuito de conversion digital a analogico por cada salida analógica, en total son 4: 2 por cada canal de CV (yo estoy usando algo asi https://www.instructables.com/id/Another-MIDI-to-CV-Box-/)
 - Fuente de 5V CC
+- Básicos conocimientos de electrónica (para el armado de los circuitos y la integracion del Arduino)
 
 ## Instalación
 De momento no hay archivos compilados, la forma de cargarlo en Arduino es la habitual, por medio de Arduino IDE. Simplemente hay bajar los archivos de este repositorio y uploadear desde el Arduino IDE como cualquier sketch.
+Para la parte de electrónica seguir el link pasado con anterioridad.
 
 ## Modus operandi
 En los canales de CV, básicamente, uno activa un grupo de notas mediante el uso del teclado, a las que llamaremos "escala", y Pepas dispara aleatoriamente cualquiera de esas notas. La cantidad de notas de una escala puede ser desde 1 hasta 16 notas (podrían ser más si pudiera, sospecho que hay un problema con el límite de memoria del Arduino UNO). 
@@ -101,3 +103,21 @@ Enough with the chatter... let's get into the shit yo!:
 - PS/2 computer keyboard (I'm using a Genius KB-06XE in spanish, I've tryied some keyboards that didn't work, couldn't identify why)
 - A digital to analog converter circuit for each of the analog outputs, 4 in total: 2 for each CV channel (I'm using something like this https://www.instructables.com/id/Another-MIDI-to-CV-Box-/)
 - 5V DC power supply
+- Basic electronics knowledge (for putting together the circuits and Arduino integration)
+
+## Installing
+By now there are no compiled files, the way to load it in the Arduino is the usual, trough the Arduino IDE. Simply download the files in this repository and upload them using the Arduino IDE as any sketch.
+For the electronics, follow the link shown before.
+
+## Modus operandi
+In the CV channels, the user activates a grup of notes, through the use of the keyboard, to wich we are calling "scale", and Pepas randomly execute any of those notes. The amount of notes in a scale can be from 1 to 16 notes (could be more if I could manage it, I suspect there is a memory limit issue on the Arduino UNO).
+On the same way, at the square envelope channels, instead of notes, the user selects the length of the duty cycle, from 0% (activating the lowest "note") to 100% (activating the highest "note"). These channels can be used as a clock output for using in other modules, being tempo synchronizable with the rest of the channels. They can also be used as a way to gate other modules.
+There are 2 sequence modes, one of completly random sequences and other of fixed sequences (randomly generated, under user defined parameters). Pepas has also a functionality to slowly mutate fixed sequences, to avoid constant repeat forever. It's way to work is to alter a step of the sequence every time a cycle is completed. Pepas decides whether to alter it or not based on the mutation probability parameter, wich is in 0% by default but the user can set it up to 100% using the potentiometer.
+
+Most important parameters are:
+- The scale (the group of activated notes)
+- The amount of notes in a scale (for the fixed sequences mode)
+- The amount of steps of a sequence (for the fixed sequences mode)
+- The tempo, settable by BPM, by "tap tempo" or by potentiomenter. It is universal, every channels obey to the same tempo, although relative durations on each channel can be different.
+- The probability of executing a note, settable by potentiometer.
+- The probability of alter a step of a sequence (for the fixed sequences mode)
