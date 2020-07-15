@@ -22,7 +22,7 @@ Mucha cháchara, mucha cháchara... pero vamo a lo bifes:
 - Arduino UNO
 - Teclado de computadora PS/2 (yo estoy usando un Genius KB-06XE en español, he probado otros que no funcionaban, no pude identificar por qué)
 - Un circuito de conversion digital a analogico por cada salida analógica, en total son 4: 2 por cada canal de CV (yo estoy usando algo asi https://www.instructables.com/id/Another-MIDI-to-CV-Box-/)
-- Fuente de 5VCC
+- Fuente de 5V CC
 
 ## Instalación
 De momento no hay archivos compilados, la forma de cargarlo en Arduino es la habitual, por medio de Arduino IDE. Simplemente hay bajar los archivos de este repositorio y uploadear desde el Arduino IDE como cualquier sketch.
@@ -100,4 +100,4 @@ Enough with the chatter... let's get into the shit yo!:
 - Arduino UNO
 - PS/2 computer keyboard (I'm using a Genius KB-06XE in spanish, I've tryied some keyboards that didn't work, couldn't identify why)
 - A digital to analog converter circuit for each of the analog outputs, 4 in total: 2 for each CV channel (I'm using something like this https://www.instructables.com/id/Another-MIDI-to-CV-Box-/)
-- 5VCC power supply
+- 5V DC power supply
