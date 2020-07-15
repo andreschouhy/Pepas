@@ -1,4 +1,5 @@
 # Pepas
+###### Versión español (scroll down for the english version)
 Pepas es un módulo secuenciador generativo de CV, gates y triggers basado en Arduino para sintetizadores modulares. 
 Está diseñado para ser económico y accesible. Su corazón es un Arduino UNO, y se opera a través de un teclado de computadora PS/2. El resto son componentes básicos de electrónica como resistencias, capacitores y demás.
 Está diseñado en vistas a ser una herramienta de experimentación musical, mediante el caos controlado. Las secuencias producidas por Pepas son únicas e irrepetibles, y no son guardadas en ninguna memoria. Lo que sí es reproducible son los parámetros que controlan el caos. Por ello no está pensado para el compositor musical que sabe exactamente qué notas quiere y en dónde. Sino mas bien para el músico que quiere experimentar ágilmente con ciertos esquemas musicales. El sistema carece de pantallas y menúes complicados, todo está siempre al alcance de los botones. Los unicos indicadores que hay son los LEDs que posee el teclado (uno para indicar que se esta ejecutando una nota en el canal actual y los 2 restantes para indicar el canal actual en formato binario del 0 al 3, o en otras palabras del primero al cuarto). 
@@ -13,20 +14,20 @@ Actualmente posee 4 canales independientes y sincronizables:
   - una salida digital cada uno
 - 1 entrada analógica de potenciómetro, para control fino de ciertos parámetros
 
-# Galería de música creada con Pepas
+## Galería de música creada con Pepas
 Mucha cháchara, mucha cháchara... pero vamo a lo bifes:
 - https://soundcloud.com/andreschouhy
 
-# Requerimientos
+## Requerimientos
 - Arduino UNO
 - Teclado de computadora PS/2 (yo estoy usando un Genius KB-06XE en español, he probado otros que no funcionaban, no pude identificar por qué)
 - Un circuito de conversion digital a analogico por cada salida analógica, en total son 4: 2 por cada canal de CV (yo estoy usando algo asi https://www.instructables.com/id/Another-MIDI-to-CV-Box-/)
 - Fuente de 5VCC
 
-# Instalación
+## Instalación
 De momento no hay archivos compilados, la forma de cargarlo en Arduino es la habitual, por medio de Arduino IDE. Simplemente hay bajar los archivos de este repositorio y uploadear desde el Arduino IDE como cualquier sketch.
 
-# Modus operandi
+## Modus operandi
 En los canales de CV, básicamente, uno activa un grupo de notas mediante el uso del teclado, a las que llamaremos "escala", y Pepas dispara aleatoriamente cualquiera de esas notas. La cantidad de notas de una escala puede ser desde 1 hasta 16 notas (podrían ser más si pudiera, sospecho que hay un problema con el límite de memoria del Arduino UNO). 
 De la misma forma, en los canales de square envelope, en lugar de notas se selecciona cuanto dura el ciclo digital entre 0 y 1, desde 0% (activando la "nota" más baja) hasta 100% (activando la "nota" más alta). Éstos canales pueden usarse como salida de clock para otros módulos, ya que son sincronizables en tempo con el resto de los canales. También pueden usarse para activar y desactivar ciertos módulos por medio de gates.
 Hay 2 modos de secuencias, uno de secuencia completamente aleatoria y otro de secuencias fijas (generadas aleatoriamente, bajo parámetros definidos por el usuario). Pepas posee también una funcionalidad para mutar levemente las secuencias fijas, para que no se repitan exactamente iguales por siempre. Su forma de operar es alterar un paso de la secuencia cada vez que la secuencia cumple un ciclo. Pepas decide si alterarlo o no mediante una probabilidad, que por defecto esta en 0% pero el usuario puede aumentar esa probabilidad a 100% operando el potenciómetro.
@@ -38,7 +39,7 @@ Los parámetros más importantes son:
 - La probabilidad de ejecutar una nota, configurable mediante el potenciómetro
 - La probabilidad de alterar un paso de una secuencia (para el modo de secuencias fijas)
 
-# Mapa de botones
+## Mapa de botones
 - Notas musicales (para los canales de CV): 34 notas posibles se distribuyen a lo largo de las botones de letras y números de la siguiente manera:
   - notas "blancas" (de un teclado musical tradicional) en las fila desde "Z" hasta "-" y desde "Q" hasta "P"
   - notas "negras" (de un teclado musical tradicional) en las filas desde "A" hasta "Ñ" y desde "1" hasta "0" (excluyendo "A", "F", "K", "1", "4" y "8")
@@ -66,7 +67,7 @@ Los parámetros más importantes son:
 - "F5" hasta "F6" activar presets (actualmente sólo de escala, quizás en el futuro se implementen otros parámetros para presetear), esto permite progresiones de acordes (o más bien, arpegios basados en acordes)
 - " * " y " / " (del teclado numérico) multiplica y divide (respectivamente) la velocidad relativa de los pasos de la secuencia por un número entero ingresado mediante el teclado numérico (presionar " * " o " / " > entrar un número > soltar " * " o " / "). Por defecto en 1, si se multiplica por 2, por ejemplo, se disparan 2 notas en el mismo tiempo que antes se disparaba una.
 
-# Fallas y cuestiones a mejorar
+## Fallas y cuestiones a mejorar
 - Creo que lo más urgente para optimizar es la comunicación con el teclado. Quizas probar otra librería.
 - Algunos teclados no funcionan, no pude identificar por qué. Quizás algun tema de protocolos. También podría solucionarse utilizando otra librería.
 - Ocasionalmente se cuelga. Quizás un problema de falta de memoria?
@@ -75,3 +76,6 @@ Los parámetros más importantes son:
 - Una buena incorporación sería una entrada de clock, para delegar el manejo del tiempo a otros sistemas más idóneos y precisos.
 - Quizás estaría bien agregar un modo de arpegio regular, no aleatorio, en el cual se podrían elegir arpegios ascendentes, descendentes, ping-pong, y algún otro.
 - Quizás alguna forma de guardar información más permanentemente, accesible luego de reiniciar el Arduino o de haber cambiado mucho las cosas. Aunque no sé si hecha a perder un poco el sentido de Pepas.
+
+# Pepas
+###### English version
