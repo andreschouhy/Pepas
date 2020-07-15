@@ -156,6 +156,6 @@ Most important parameters are:
 - Occasionally it hangs. Maybe lack of enough memory?
 - Occasioanlly scales are not closed and keeps adding notes, sometimes it finally closes the scale when pressing "TAB" 2 times (hence forcing to close the scale, reseting it)
 - Tempo is not clock precise, it deviates a little (I suspect that ambient temperature has something to do) although is not so notorious after a few minutes from synchronization. It gets notorious after something like 20-30 minutes, but it is not so likely that someone wants that strong precision after that much time.
-- A good income would be a clock input, to delegate time handling to other more suitable and precise systems.
+- A good incorporation would be a clock input, to delegate time handling to other more suitable and precise systems.
 - Maybe it would be nice to add a regular arpegio mode, nor tandom, in wich the user could pick from acsending , descending, ping-pong, and other tipes of arpeggios.
 - Maybe a way to store information more permanently, accesible after rebooting the Arduino or after having changed things a lot. Although I'm not sure if this spoils the point of Pepas.
