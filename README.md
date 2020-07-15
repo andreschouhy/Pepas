@@ -121,3 +121,33 @@ Most important parameters are:
 - The tempo, settable by BPM, by "tap tempo" or by potentiomenter. It is universal, every channels obey to the same tempo, although relative durations on each channel can be different.
 - The probability of executing a note, settable by potentiometer.
 - The probability of alter a step of a sequence (for the fixed sequences mode)
+
+## Keymap
+- Musical notes (for the CV channels): 34 possible notes are spread through the letters and numbers buttons in this way:
+  - "white" notes (from a traditional musical keyboard) on the row from "Z" to "/" and from "Q" to "P"
+  - "black" notes (from a traditional musical keyboard) on the row from "A" to ";" and from "1" to "0" (excluding "A", "F", "K", "1", "4", and "8")
+- Duty cycle length (for the square envelope channels): 0-100% spread through the same buttons as musical notes.
+- "TAB" selects the channel (the 2 LEDs from the right on the 3 LEDs group of the keyboard acts as indicators for the current channel in a binary format from channel 0 to channel 3)
+- The first LED to the left of the 3 LEDs group in the keyboard indicates when a note is being executed.
+- "CAPS LOCK" switches between 2 modes fo executing notes:
+  - one in wich the executed notes are the ones that are being phisically pressed
+  - other in wich those notes are held active despites of being or not phisically pressed until the first note of a new group of notes is pressed.
+- "SPACEBAR" switches between the random sequences mode and the fixed sequences mode.
+
+- "ESPACIO" alterna entre el modo de secuencias aleatorias y secuencias fijas
+- "BORRAR" resetea la secuencia (para el modo de secuencias fijas)
+- " ' " (el botón a la izquierda del "1") sincroniza el tiempo de todos los canales tomando como master el canal actual (es decir, sin alterarlo)
+- Manteniendo "CTRL" se puede:
+  - ingresar la cantidad de pasos de la secuencia fija, desde 1 hasta 64, utilizando el teclado numérico
+  - configurar el tempo mediante el uso del potenciómetro
+  - guardar un preset (presionar "CTRL" > presionar "F5","F6","F7" o "F8" > soltar "CTRL")
+- Manteniendo "ALT" se puede:
+  - ingresar la cantidad de notas que tiene la escala, desde 1 hasta 16, utilizando el teclado numérico
+  - configurar la probabilidad de ejecución de notas mediante el uso del potenciómetro, desde 0% hasta 100%
+- "SHIFT" propaga todo lo que se hace en un canal a los demás canales
+- "FLECHA ARRIBA" y "FLECHA ABAJO" cambia de escala (sólo para los canales de CV)
+- "ESC" tap tempo (actualmente no está funcionando bien)
+- "F1" configura el parámetro de mutación (para las secuencias fijas) mediante el uso del potenciómetro (presionar "F1" > mover potenciómetro > soltar "F1")
+- "F2" configura el tempo en BPM usando el teclado numerico (presionar "F2" > entrar BPM > soltar "F2")
+- "F5" hasta "F6" activar presets (actualmente sólo de escala, quizás en el futuro se implementen otros parámetros para presetear), esto permite progresiones de acordes (o más bien, arpegios basados en acordes)
+- " * " y " / " (del teclado numérico) multiplica y divide (respectivamente) la velocidad relativa de los pasos de la secuencia por un número entero ingresado mediante el teclado numérico (presionar " * " o " / " > entrar un número > soltar " * " o " / "). Por defecto en 1, si se multiplica por 2, por ejemplo, se disparan 2 notas en el mismo tiempo que antes se disparaba una.
