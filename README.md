@@ -8,6 +8,7 @@ Para una introducción más didáctica, vea el siguiente video:
 https://www.youtube.com/watch?v=Qqi9xfu0wNE
 
 ![Referencia Frente](https://raw.githubusercontent.com/andreschouhy/Pepas/master/frente%20prototipo.jpg?token=AA6T45M66M43RN7Q45JUHXC7CLNDA)
+Referencias 3 y 4 sin uso actualmente, fueron parte de un estadío previo de desarrollo.
 
 Actualmente posee 4 canales independientes y sincronizables:
 - 2 canales de CV, y cada uno posee:
@@ -93,6 +94,7 @@ For a more didactic introduction, see the next video:
 https://www.youtube.com/watch?v=Qqi9xfu0wNE
 
 ![References Front](https://raw.githubusercontent.com/andreschouhy/Pepas/master/frente%20prototipo.jpg?token=AA6T45M66M43RN7Q45JUHXC7CLNDA)
+References 3 and 4 currently not used, were part of a previous developing state.
 
 By now it has 4 independant and synchronizable channels:
 - 2 CV channels, each one has:
