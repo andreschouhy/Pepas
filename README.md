@@ -7,7 +7,8 @@ Está diseñado en vistas a ser una herramienta de experimentación musical, med
 Para una introducción más didáctica, vea el siguiente video:
 https://www.youtube.com/watch?v=Qqi9xfu0wNE
 
-![Referencia Frente](https://raw.githubusercontent.com/andreschouhy/Pepas/master/frente%20prototipo.jpg?token=AA6T45M66M43RN7Q45JUHXC7CLNDA)
+![Referencia Frente](https://github.com/andreschouhy/Pepas/blob/master/frente%20prototipo.jpg?raw=true)
+
 Referencias 3 y 4 sin uso actualmente, fueron parte de un estadío previo de desarrollo.
 
 Actualmente posee 4 canales independientes y sincronizables:
@@ -93,7 +94,7 @@ It is designed to be a musical experimentation tool, based on a controlled chaos
 For a more didactic introduction, see the next video:
 https://www.youtube.com/watch?v=Qqi9xfu0wNE
 
-![References Front](https://raw.githubusercontent.com/andreschouhy/Pepas/master/frente%20prototipo.jpg?token=AA6T45M66M43RN7Q45JUHXC7CLNDA)
+![References Front](https://github.com/andreschouhy/Pepas/blob/master/frente%20prototipo.jpg?raw=true)
 References 3 and 4 currently not used, were part of a previous developing state.
 
 By now it has 4 independant and synchronizable channels:
