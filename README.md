@@ -13,13 +13,14 @@ Referencias 3 y 4 sin uso actualmente, fueron parte de un estadío previo de des
 
 Actualmente posee 4 canales independientes y sincronizables:
 - 2 canales de CV, y cada uno posee:
-  - una salida analógica de CV controlable mediante el teclado
-  - una salida analógica de CV aleatorio (por ejemplo para controlar cambios de amplitud de un VCA o variar aleatoriamente un VCF, etc)
-  - una salida digital de trigger
-  - una salida digital de gate
+  - una salida analógica de CV controlable mediante el teclado (referencias 5 y 9)
+  - una salida analógica de CV aleatorio, por ejemplo para controlar cambios de amplitud de un VCA o variar aleatoriamente un VCF, etc (referencias 7 y 11)
+  - una salida digital de trigger (referencias 8 y 12)
+  - una salida digital de gate (referencias 6 y 10)
 - 2 canales de square envelope (encontrar una traducción coherente para este termino):
-  - una salida digital cada uno
-- 1 entrada analógica de potenciómetro, para control fino de ciertos parámetros
+  - una salida digital cada uno (referencias 13 y 14)
+- 1 entrada analógica de potenciómetro, para control fino de ciertos parámetros (referencia 2)
+- 1 puerto PS/2 (referencia 1)
 
 ## Galería de música creada con Pepas
 Mucha cháchara, mucha cháchara... pero vamo a lo bifes:
@@ -99,13 +100,14 @@ References 3 and 4 currently not used, were part of a previous developing state.
 
 By now it has 4 independant and synchronizable channels:
 - 2 CV channels, each one has:
-  - one analog CV output controllable through the keyboard
-  - one analog random CV output (useful for controlling amplitud changes in a VCA or vary randomly a VCF, or such)
-  - one digital trigger output
-  - one digital gate output
+  - one analog CV output controllable through the keyboard (references 5 and 9)
+  - one analog random CV output, useful for controlling amplitud changes in a VCA or vary randomly a VCF, or such (references 7 and 11)
+  - one digital trigger output (references 8 and 12)
+  - one digital gate output (references 6 and 10)
 - 2 square envelope channels, each one has:
-  - one digital output
-- 1 analog input from a potentiometer, to fine control some parameters
+  - one digital output (references 13 and 14)
+- 1 analog input from a potentiometer, to fine control some parameters (reference 2)
+- 1 PS/2 port (reference 1)
 
 ## Gallery of music created with Pepas
 Enough with the chatter... let's get into the shit yo!:
