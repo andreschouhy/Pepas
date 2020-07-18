@@ -96,6 +96,7 @@ For a more didactic introduction, see the next video:
 https://www.youtube.com/watch?v=Qqi9xfu0wNE
 
 ![References Front](https://github.com/andreschouhy/Pepas/blob/master/frente%20prototipo.jpg?raw=true)
+
 References 3 and 4 currently not used, were part of a previous developing state.
 
 By now it has 4 independant and synchronizable channels:
