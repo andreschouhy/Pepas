@@ -86,6 +86,7 @@ Los parámetros más importantes son:
 - Una buena incorporación sería una entrada de clock, para delegar el manejo del tiempo a otros sistemas más idóneos y precisos.
 - Quizás estaría bien agregar un modo de arpegio regular, no aleatorio, en el cual se podrían elegir arpegios ascendentes, descendentes, ping-pong, y algún otro.
 - Quizás alguna forma de guardar información más permanentemente, accesible luego de reiniciar el Arduino o de haber cambiado mucho las cosas. Aunque no sé si hecha a perder un poco el sentido de Pepas.
+- Entradas/salidas MIDI/OSC?
 
 # Pepas
 ###### English version
@@ -175,3 +176,4 @@ Most important parameters are:
 - A good incorporation would be a clock input, to delegate time handling to other more suitable and precise systems.
 - Maybe it would be nice to add a regular arpegio mode, nor tandom, in wich the user could pick from acsending , descending, ping-pong, and other tipes of arpeggios.
 - Maybe a way to store information more permanently, accesible after rebooting the Arduino or after having changed things a lot. Although I'm not sure if this spoils the point of Pepas.
+- MIDI/OSC inputs/outputs?
