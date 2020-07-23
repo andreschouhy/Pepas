@@ -29,7 +29,7 @@ Mucha cháchara, mucha cháchara... pero vamo a lo bifes:
 ## Requerimientos
 - Arduino UNO
 - Teclado de computadora PS/2 (yo estoy usando un Genius KB-06XE en español, he probado otros que no funcionaban, no pude identificar por qué)
-- Un circuito de conversion digital a analogico por cada salida analógica, en total son 4: 2 por cada canal de CV (yo estoy usando algo asi https://www.instructables.com/id/Another-MIDI-to-CV-Box-/)
+- Un circuito de conversion digital a analogico por cada salida analógica, en total son 4: 2 por cada canal de CV (yo estoy usando algo asi https://6c77fdce-a-62cb3a1a-s-sites.googlegroups.com/site/diyanalogsynth/plug-in/midi2cv/ArduinoCV.png?attachauth=ANoY7cp0QFX_oD9Qo4woRX9J2I0JheuAWA63GdwuJ04TWnj_1aW5qMksBtXhkY7Ro5xNJ12PrTc_kGWm96okqwCgo5-VxEFjm03UO1QHa8xrIhA4eW9PEHALUHHntg6rA5poOMqCrPh1gGQuUfWjxZjp0DLjbZZ2wbNmm8HFSALRtJZZdGZjEczK1CbC8Wh-iSUnpuaffuVJnsLHXY7bsktzV4ZO0D1rFgCc_0VbkakZGae-GjD92iY%3D&attredirects=0)
 - Fuente de 5V CC
 - Básicos conocimientos de electrónica (para el armado de los circuitos y la integracion del Arduino)
 
@@ -118,7 +118,7 @@ Enough with the chatter... let's get into the shit yo!:
 ## Requirements
 - Arduino UNO
 - PS/2 computer keyboard (I'm using a Genius KB-06XE in spanish, I've tryied some keyboards that didn't work, couldn't identify why)
-- A digital to analog converter circuit for each of the analog outputs, 4 in total: 2 for each CV channel (I'm using something like this https://www.instructables.com/id/Another-MIDI-to-CV-Box-/)
+- A digital to analog converter circuit for each of the analog outputs, 4 in total: 2 for each CV channel (I'm using something like this https://6c77fdce-a-62cb3a1a-s-sites.googlegroups.com/site/diyanalogsynth/plug-in/midi2cv/ArduinoCV.png?attachauth=ANoY7cp0QFX_oD9Qo4woRX9J2I0JheuAWA63GdwuJ04TWnj_1aW5qMksBtXhkY7Ro5xNJ12PrTc_kGWm96okqwCgo5-VxEFjm03UO1QHa8xrIhA4eW9PEHALUHHntg6rA5poOMqCrPh1gGQuUfWjxZjp0DLjbZZ2wbNmm8HFSALRtJZZdGZjEczK1CbC8Wh-iSUnpuaffuVJnsLHXY7bsktzV4ZO0D1rFgCc_0VbkakZGae-GjD92iY%3D&attredirects=0)
 - 5V DC power supply
 - Basic electronics knowledge (for putting together the circuits and Arduino integration)
 
