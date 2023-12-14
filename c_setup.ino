@@ -1,4 +1,5 @@
-void setup() {
+void setup() 
+{
   //pinMode(ledPin, OUTPUT);
   pinMode(13, OUTPUT);
   digitalWrite(13, LOW);
@@ -27,6 +28,12 @@ void setup() {
   //digitalWrite(10, LOW);
   //analogWrite(11, 0);
   digitalWrite(11, LOW);
+
+  pinMode(A0, INPUT);
+  
+  pinMode(extClockSwitchPin, INPUT);
+  pinMode(extClockPin, INPUT_PULLUP);
+  clockSwitch = digitalRead(extClockSwitchPin);
   
   pepas[0] = new Pepa(5, 4, 6, 7, analogRead(A0), 0, 0);
   pepas[1] = new Pepa(9, 8, 10, 12, analogRead(A0), 0, 1);
@@ -54,7 +61,10 @@ void setup() {
   releaseClock();
   inhibiting = false;
   
-  while(ps2Available()) uint8_t Byte = ps2Read();
+  while (ps2Available()) 
+  {
+    uint8_t Byte = ps2Read();
+  }
   
   //Serial.begin(115200);
   //Serial.print("capacidad: ");
@@ -64,15 +74,60 @@ void setup() {
   //prevMillis = millis() / multTemp;
 }
 
-void loop() {
-  //delay(1 * multTemp);
+void loop() 
+{
   currentMillis = millis() / multTemp;
-  diferencia = currentMillis - prevMillis;
-  //diferencia /= multTemp;
+  deltaMillis = currentMillis - prevMillis;
 
-  if(diferencia >= 1) prevMillis = currentMillis;
+  if (deltaMillis >= 1) 
+  {
+    prevMillis = currentMillis;
+  }
+
+  boolean clockInput = digitalRead(extClockPin);
+  clockSwitch = digitalRead(extClockSwitchPin);
   
-  for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->actualizar();
+  if (clockSwitch == true)
+  {
+    for (uint8_t i = 0; i < cantPepas; i++) 
+    {
+      pepas[i]->triggerLoopCheck(); // actualizar triggerLoop
+    }
+    
+    if (clockInput == HIGH && clockCheck == false)
+    {
+      clockCheck = true;
+      
+      // resetear secuencia luego de que se haya interrumpido el clock externo
+      clockDifCurrent = currentMillis - clockMillisPrev;
+      clockDifPrev = clockMillisPrev - clockMillisPrevPrev;
+      if (clockDifCurrent > (clockDifPrev * 8)) 
+      {
+        for (uint8_t i = 0; i < cantPepas; i++) 
+        {
+          pepas[i]->reiniciarCabezal();
+        }
+      }
+      clockMillisPrevPrev = clockMillisPrev;
+      clockMillisPrev = currentMillis;
+      
+      for (uint8_t i = 0; i < cantPepas; i++) 
+      {
+        pepas[i]->actualizar(); // actualizar las pepas
+      }
+    }
+    else if (clockInput == LOW && clockCheck == true)
+    {
+      clockCheck = false;
+    }
+  }
+  else
+  {
+    for(uint8_t i = 0; i < cantPepas; i++) 
+    {
+      pepas[i]->actualizar(); // actualizar las pepas
+    }
+  }
   
   eventoTeclado();
   
@@ -93,5 +148,4 @@ void loop() {
       poteSnapshotGral = velocidadGeneral - (pote * precision);
     }
   }
-
 }

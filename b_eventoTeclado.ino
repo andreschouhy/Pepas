@@ -100,7 +100,7 @@ void eventoTeclado()
       if(buscar(Byte) == -1)
       {
         cantPresionadas++;
-        presionadas[cantPresionadas-1] = Byte;
+        presionadas[cantPresionadas - 1] = Byte;
         //atualizarLED();
         
         if(K2Midi(Byte) > 0 && E0Key == 0)  // presionando una nota
@@ -149,26 +149,26 @@ void eventoTeclado()
         else if(Byte == 0x03) // presionando F5 (preset de escala 1)
         {
           //ajusteFinoVel = 0.95; // reemplazado por presets, se podría ubicar en otra tecla
-          pepas[selector]->preset(1);
-          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->preset(1); 
+//          pepas[selector]->preset(1);
+//          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->preset(1); 
         }
         else if(Byte == 0x0B) // presionando F6 (preset de escala 2)
         {
           //ajusteFinoVel = 0.99; // reemplazado por presets, se podría ubicar en otra tecla
-          pepas[selector]->preset(2);
-          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->preset(2); 
+//          pepas[selector]->preset(2);
+//          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->preset(2); 
         }
         else if(Byte == 0x83) // presionando F7 (preset de escala 3)
         {
           //ajusteFinoVel = 1.01; // reemplazado por presets, se podría ubicar en otra tecla
-          pepas[selector]->preset(3);
-          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->preset(3); 
+//          pepas[selector]->preset(3);
+//          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->preset(3); 
         }
         else if(Byte == 0x0A) // presionando F8 (preset de escala 4)
         {
           //ajusteFinoVel = 1.05; // reemplazado por presets, se podría ubicar en otra tecla
-          pepas[selector]->preset(4);
-          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->preset(4); 
+//          pepas[selector]->preset(4);
+//          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->preset(4); 
         }
         else if(Byte == 0x0E) // presionando ` (sincronizar)
         {
@@ -181,11 +181,18 @@ void eventoTeclado()
               long bT = pepas[i]->timingCap;
               long bM = pepas[i]->multiplicador;
               
-              if(pepas[selector]->dividiendo == 0) bT = aT / aM;
-              else bT = aT * aM;
-              if(pepas[i]->dividiendo == 0) bT = bT * bM;
-              else bT = bT / bM;
-              while(bT > capacidad) bT -= capacidad;
+              if (pepas[selector]->dividiendo == 0) 
+                bT = aT / aM;
+              else 
+                bT = aT * aM;
+              
+              if (pepas[i]->dividiendo == 0) 
+                bT = bT * bM;
+              else 
+                bT = bT / bM;
+              
+              while (bT > capacidad) 
+                bT -= capacidad;
               
               pepas[i]->timingCap = bT;
               pepas[i]->velocidad = pepas[selector]->velocidad; 
@@ -202,8 +209,7 @@ void eventoTeclado()
           {
             for(uint8_t i = 0; i < cantPepas; i++) 
             {
-              pepas[i]->timingCap = 0;
-              pepas[i]->disparar = 1;
+              pepas[i]->reiniciarCabezal();
             }
           }
         }
