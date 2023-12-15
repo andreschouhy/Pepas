@@ -239,16 +239,31 @@ class Pepa
     {
       if (K2Midi(tecla) > 0)
       {
-        if (escalaSize > 0 && mantener == 1 && notasPresionadas == 1) 
-          resetearEscala(); //resetear escala cuando esta en mantener
+        if (mantener == 1)
+        {
+          if (escalaSize > 0 && notasPresionadas == 1) 
+            resetearEscala(); //resetear escala cuando esta en mantener
+        }
         
         escalaSize++;
         escala[escalaSize - 1] = K2Midi(tecla);
-      }
       
-      if (escalaSize == 1 && mantener != 1) 
-      {
-        reiniciarCabezal();
+        if (escalaSize == 1) 
+        {
+          if (mantener == 1)
+          {
+            disparar = 0;
+            if (clockSwitch == false)
+              reiniciarCabezal();
+          }
+          else
+          {
+            if (clockSwitch == false)
+              reiniciarCabezal();
+            else
+              disparar = 0;
+          } 
+        }
       }
     }
     

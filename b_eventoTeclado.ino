@@ -97,84 +97,106 @@ void eventoTeclado()
     /////////////////////////////////////////////////////// PRESIONANDO //////////////////////////////////////////////////////////////////////////
     else if(Byte > 0)
     {
-      if(buscar(Byte) == -1)
+      if (buscar(Byte) == -1)
       {
         cantPresionadas++;
         presionadas[cantPresionadas - 1] = Byte;
         //atualizarLED();
         
-        if(K2Midi(Byte) > 0 && E0Key == 0)  // presionando una nota
+        if (K2Midi(Byte) > 0 && E0Key == 0)  // presionando una nota
         {
           notasPresionadas++;
-          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->agregar(Byte); 
-          else pepas[selector]->agregar(Byte);
+          
+          if (shift == 1) 
+            for (uint8_t i = 0; i < cantPepas; i++) 
+              pepas[i]->agregar(Byte); 
+          else 
+            pepas[selector]->agregar(Byte);
         }
-        else if(Byte == 0x58) // presionando capslock
+        else if (Byte == 0x58) // presionando capslock
         {
-          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->mantenerSwitch(); 
-          else pepas[selector]->mantenerSwitch(); 
+          if (shift == 1) 
+            for (uint8_t i = 0; i < cantPepas; i++) 
+              pepas[i]->mantenerSwitch(); 
+          else 
+            pepas[selector]->mantenerSwitch(); 
         }
-        else if(Byte == 0x29) // presionando espacio
+        else if (Byte == 0x29) // presionando espacio
         {
-          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->secuenciarSwitch(); 
-          else pepas[selector]->secuenciarSwitch();
+          if (shift == 1) 
+            for (uint8_t i = 0; i < cantPepas; i++) 
+              pepas[i]->secuenciarSwitch(); 
+          else 
+            pepas[selector]->secuenciarSwitch();
         }
-        else if(Byte == 0x66) // presionando backspace
+        else if (Byte == 0x66) // presionando backspace
         {
-          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->resetearSecuencia(); 
-          else pepas[selector]->resetearSecuencia();
+          if (shift == 1) 
+            for (uint8_t i = 0; i < cantPepas; i++) 
+              pepas[i]->resetearSecuencia(); 
+          else 
+            pepas[selector]->resetearSecuencia();
         }
-        else if(Byte == 0x14 && pepas[selector]->control == 0) // presionando L CTRL
+        else if (Byte == 0x14 && pepas[selector]->control == 0) // presionando L CTRL
         {
           controlarVelocidad = 1;
           poteSnapshotGral = velocidadGeneral - ((long)pote * precision);
           
-          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->controlarCTRL(1); 
-          else pepas[selector]->controlarCTRL(1);
+          if (shift == 1) 
+            for(uint8_t i = 0; i < cantPepas; i++) 
+              pepas[i]->controlarCTRL(1); 
+          else 
+            pepas[selector]->controlarCTRL(1);
         }
-        else if(Byte == 0x11 && pepas[selector]->control == 0) // presionando L ALT
+        else if (Byte == 0x11 && pepas[selector]->control == 0) // presionando L ALT
         {
-          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->controlarALT(1); 
-          else pepas[selector]->controlarALT(1);
+          if (shift == 1) 
+            for (uint8_t i = 0; i < cantPepas; i++) 
+              pepas[i]->controlarALT(1); 
+          else 
+            pepas[selector]->controlarALT(1);
         }
-        else if(Byte == 0x05 && pepas[selector]->control == 0) // presionando F1
+        else if (Byte == 0x05 && pepas[selector]->control == 0) // presionando F1
         {
-          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->controlarF1(1); 
-          else pepas[selector]->controlarF1(1);
+          if (shift == 1) 
+            for(uint8_t i = 0; i < cantPepas; i++) 
+              pepas[i]->controlarF1(1); 
+          else 
+            pepas[selector]->controlarF1(1);
         }
-        else if(Byte == 0x06) // presionando F2
+        else if (Byte == 0x06) // presionando F2
         {
           setTempo = 1;
         }
-        else if(Byte == 0x03) // presionando F5 (preset de escala 1)
+        else if (Byte == 0x03) // presionando F5 (preset de escala 1)
         {
           //ajusteFinoVel = 0.95; // reemplazado por presets, se podría ubicar en otra tecla
 //          pepas[selector]->preset(1);
 //          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->preset(1); 
         }
-        else if(Byte == 0x0B) // presionando F6 (preset de escala 2)
+        else if (Byte == 0x0B) // presionando F6 (preset de escala 2)
         {
           //ajusteFinoVel = 0.99; // reemplazado por presets, se podría ubicar en otra tecla
 //          pepas[selector]->preset(2);
 //          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->preset(2); 
         }
-        else if(Byte == 0x83) // presionando F7 (preset de escala 3)
+        else if (Byte == 0x83) // presionando F7 (preset de escala 3)
         {
           //ajusteFinoVel = 1.01; // reemplazado por presets, se podría ubicar en otra tecla
 //          pepas[selector]->preset(3);
 //          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->preset(3); 
         }
-        else if(Byte == 0x0A) // presionando F8 (preset de escala 4)
+        else if (Byte == 0x0A) // presionando F8 (preset de escala 4)
         {
           //ajusteFinoVel = 1.05; // reemplazado por presets, se podría ubicar en otra tecla
 //          pepas[selector]->preset(4);
 //          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->preset(4); 
         }
-        else if(Byte == 0x0E) // presionando ` (sincronizar)
+        else if (Byte == 0x0E) // presionando ` (sincronizar)
         {
-          for(uint8_t i = 0; i < cantPepas; i++) 
+          for (uint8_t i = 0; i < cantPepas; i++) 
           {
-            if(i != selector) 
+            if (i != selector) 
             {
               long aT = pepas[selector]->timingCap;
               long aM = pepas[selector]->multiplicador;
@@ -199,7 +221,7 @@ void eventoTeclado()
             }
           }
         }
-        else if(Byte == 0x76) // presionando ESC (resetear timingCap en todas las pepas) /////////////////////// agregar funcion de tap tempo cuando esta presionado SHIFT
+        else if (Byte == 0x76) // presionando ESC (resetear timingCap en todas las pepas) /////////////////////// agregar funcion de tap tempo cuando esta presionado SHIFT
         {
           if (shift == 1)
           {
@@ -213,14 +235,27 @@ void eventoTeclado()
             }
           }
         }
-        else if(Byte == 0x12) // presionando L SHIFT
+        else if (Byte == 0x12) // presionando L SHIFT
         {
-          if(buscar(0x14) >= 0) for(uint8_t i = 0; i < cantPepas; i++) if(i != selector) pepas[i]->controlarCTRL(1); //checkear si esta presionado L CTRL
-          if(buscar(0x11) >= 0) for(uint8_t i = 0; i < cantPepas; i++) if(i != selector) pepas[i]->controlarALT(1); //checkear si esta presionado L ALT
-          if(cantPresionadas > 0) for(uint8_t i = 0; i < cantPresionadas; i++) if(K2Midi(i) > 0) for(uint8_t j = 0; j < cantPepas; j++) pepas[j]->agregar(K2Midi(i)); 
+          if (buscar(0x14) >= 0) 
+            for (uint8_t i = 0; i < cantPepas; i++) 
+              if (i != selector) 
+                pepas[i]->controlarCTRL(1); //checkear si esta presionado L CTRL
+          
+          if (buscar(0x11) >= 0) 
+            for (uint8_t i = 0; i < cantPepas; i++) 
+              if (i != selector) 
+                pepas[i]->controlarALT(1); //checkear si esta presionado L ALT
+          
+          if (cantPresionadas > 0) 
+            for(uint8_t i = 0; i < cantPresionadas; i++) 
+              if(K2Midi(i) > 0) 
+                for(uint8_t j = 0; j < cantPepas; j++) 
+                  pepas[j]->agregar(K2Midi(i)); 
+          
           shift = 1;
         }
-        else if(Byte == 0x0D) // presionando TAB
+        else if (Byte == 0x0D) // presionando TAB
         {
           selector++;
           if(selector > cantPepas - 1) selector = 0;
