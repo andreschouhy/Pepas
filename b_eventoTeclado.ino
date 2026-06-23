@@ -72,7 +72,6 @@ void eventoTeclado()
           tempo = 0;
         }
       }
-      //else if(Byte == 0x03 || Byte == 0x0B || Byte == 0x83 || Byte == 0x0A) ajusteFinoVel = 1.0; // soltando F5, F6, F7, F8 // reemplazadas las teclas para presets
       else if(Byte == 0x7C) // soltando KP * (para multiplicar velocidad)
       {
         if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->controlarMult(0); 
@@ -87,7 +86,8 @@ void eventoTeclado()
       {
         if(buscar(0x14) >= 0) for(uint8_t i = 0; i < cantPepas; i++) if(i != selector)pepas[i]->controlarCTRL(0); 
         if(buscar(0x11) >= 0) for(uint8_t i = 0; i < cantPepas; i++) if(i != selector)pepas[i]->controlarALT(0); 
-        if(cantPresionadas > 0) for(uint8_t i = 0; i < cantPresionadas; i++) if(K2Midi(i) > 0) for(uint8_t j = 0; j < cantPepas; j++) pepas[j]->quitar(K2Midi(i)); 
+        // quitar de todas las pepas las notas que siguen fisicamente presionadas (se itera el scancode guardado, no el indice)
+        if(cantPresionadas > 0) for(uint8_t i = 0; i < cantPresionadas; i++) if(K2Midi(presionadas[i]) > 0) for(uint8_t j = 0; j < cantPepas; j++) pepas[j]->quitar(presionadas[i]);
         for(uint8_t i = 0; i < cantTaps; i++) tap[i] = 0;
         shift = 0;
       }
@@ -168,30 +168,7 @@ void eventoTeclado()
         {
           setTempo = 1;
         }
-        else if (Byte == 0x03) // presionando F5 (preset de escala 1)
-        {
-          //ajusteFinoVel = 0.95; // reemplazado por presets, se podría ubicar en otra tecla
-//          pepas[selector]->preset(1);
-//          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->preset(1); 
-        }
-        else if (Byte == 0x0B) // presionando F6 (preset de escala 2)
-        {
-          //ajusteFinoVel = 0.99; // reemplazado por presets, se podría ubicar en otra tecla
-//          pepas[selector]->preset(2);
-//          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->preset(2); 
-        }
-        else if (Byte == 0x83) // presionando F7 (preset de escala 3)
-        {
-          //ajusteFinoVel = 1.01; // reemplazado por presets, se podría ubicar en otra tecla
-//          pepas[selector]->preset(3);
-//          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->preset(3); 
-        }
-        else if (Byte == 0x0A) // presionando F8 (preset de escala 4)
-        {
-          //ajusteFinoVel = 1.05; // reemplazado por presets, se podría ubicar en otra tecla
-//          pepas[selector]->preset(4);
-//          if(shift == 1) for(uint8_t i = 0; i < cantPepas; i++) pepas[i]->preset(4); 
-        }
+        // F5-F8 (0x03/0x0B/0x83/0x0A) quedaron libres al sacar los presets, disponibles para futuras funciones
         else if (Byte == 0x0E) // presionando ` (sincronizar)
         {
           for (uint8_t i = 0; i < cantPepas; i++) 
@@ -247,12 +224,13 @@ void eventoTeclado()
               if (i != selector) 
                 pepas[i]->controlarALT(1); //checkear si esta presionado L ALT
           
-          if (cantPresionadas > 0) 
-            for(uint8_t i = 0; i < cantPresionadas; i++) 
-              if(K2Midi(i) > 0) 
-                for(uint8_t j = 0; j < cantPepas; j++) 
-                  pepas[j]->agregar(K2Midi(i)); 
-          
+          // agregar a todas las pepas las notas que siguen fisicamente presionadas (se itera el scancode guardado, no el indice)
+          if (cantPresionadas > 0)
+            for(uint8_t i = 0; i < cantPresionadas; i++)
+              if(K2Midi(presionadas[i]) > 0)
+                for(uint8_t j = 0; j < cantPepas; j++)
+                  pepas[j]->agregar(presionadas[i]);
+
           shift = 1;
         }
         else if (Byte == 0x0D) // presionando TAB

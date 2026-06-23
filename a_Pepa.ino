@@ -10,7 +10,6 @@ class Pepa
       puertoCV2 = _puertoCV2;
       puertoG = _puertoG;
       futureMillisT = escalaSize = 0;
-//      escalaSizePreset1 = escalaSizePreset2 = escalaSizePreset3 = escalaSizePreset4 = 0;
       mantener = secuenciar = cabezal = timingCap = timingCapPrev = disparar = control = dividiendo = 0;
       secuenciaCantTemp = 8;
       notasSec = 8;
@@ -25,7 +24,6 @@ class Pepa
     }
     
     uint8_t escalaSize, tamanoEscalaLimite, mantener, control, dividiendo, octava, modoSqrEnv, id, disparar;
-//    uint8_t escalaSizePreset1, escalaSizePreset2, escalaSizePreset3, escalaSizePreset4;
     long multiplicador, velocidad, timingCap;
     int probabilidad, mutacion, clockCount;
     uint8_t numero;
@@ -37,8 +35,8 @@ class Pepa
     
     void actualizar()
     {
-      velocidad = velocidadGeneral * ajusteFinoVel; // reemplazando velocidad individual por general
-      
+      velocidad = velocidadGeneral; // la velocidad de cada pepa sigue a la general
+
       if(control == 1)
       {/*( // condicional comentado para reemplazar con velocidad general
         velocidad = (pote * precision) + poteSnapshot;
@@ -167,23 +165,23 @@ class Pepa
         }
         else // secuencia fija
         {
-          if (secuencia[cabezal][1] == 1)
+          if (pasoGate(cabezal) == 1)
           {
             if (modoSqrEnv == 0)
             {
-              uint8_t notaOut = escala[secuencia[cabezal][0] % escalaSize]; 
+              uint8_t notaOut = escala[pasoNota(cabezal) % escalaSize];
               notaOut += (12*(octava-1));
               notaOut = min(notaOut, 81);
               analogWrite(puertoCV, map(notaOut, 21, 81, 0, 255));
               trigger(10);
               triggerLED(id, 1);
               triggerLED(id, 0);
-              analogWrite(puertoCV2, secuencia[cabezal][2]);
+              analogWrite(puertoCV2, pasoCV(cabezal));
               digitalWrite(puertoG, HIGH);
             }
-            else if (modoSqrEnv == 1) 
+            else if (modoSqrEnv == 1)
             {
-              uint8_t notaOut = escala[secuencia[cabezal][0] % escalaSize]; 
+              uint8_t notaOut = escala[pasoNota(cabezal) % escalaSize];
               sqrEnvCycle = capacidad * (map(notaOut, 21, 49, 0, 100)/100.0);
               
               if (clockSwitch == true) 
@@ -325,15 +323,10 @@ class Pepa
     {
       secuenciaCant = secuenciaCantTemp;
         
-      for (uint8_t i = 0; i < secuenciaCant; i++) 
+      for (uint8_t i = 0; i < secuenciaCant; i++)
       {
-        secuencia[i][0] = random(notasSec);
-        secuencia[i][2] = random(255);
-        
-        if (random(1024) <= probabilidad) 
-          secuencia[i][1] = 1;
-        else 
-          secuencia[i][1] = 0;
+        uint8_t gate = (random(1024) <= probabilidad) ? 1 : 0;
+        escribirPaso(i, random(notasSec), gate, random(255));
       }
     }
 
@@ -347,16 +340,11 @@ class Pepa
     
     void mutarSecuencia()
     {
-      if (random(1024) < mutacion) 
+      if (random(1024) < mutacion)
       {
         uint8_t mutado = random(secuenciaCant);
-        secuencia[mutado][0] = random(notasSec);
-        secuencia[mutado][2] = random(255);
-        
-        if (random(1024) <= probabilidad) 
-          secuencia[mutado][1] = 1;
-        else 
-          secuencia[mutado][1] = 0;
+        uint8_t gate = (random(1024) <= probabilidad) ? 1 : 0;
+        escribirPaso(mutado, random(notasSec), gate, random(255));
       }
     }
     
@@ -465,55 +453,23 @@ class Pepa
         octava = 1;
     }
 
-    /*void preset(uint8_t presetID)
-    {
-      if(control == 1) // guardar preset
-      {
-        switch (presetID){
-          case 1:
-            escalaSizePreset1 = escalaSize;
-            for (uint8_t i = 0; i < 16; i++) escalaPreset1[i] = escala[i];
-            break;
-          case 2:
-            escalaSizePreset2 = escalaSize;
-            for (uint8_t i = 0; i < 16; i++) escalaPreset2[i] = escala[i];
-            break;
-          case 3:
-            escalaSizePreset3 = escalaSize;
-            for (uint8_t i = 0; i < 16; i++) escalaPreset3[i] = escala[i];
-            break;
-          case 4:
-            escalaSizePreset4 = escalaSize;
-            for (uint8_t i = 0; i < 16; i++) escalaPreset4[i] = escala[i];
-            break;
-        }
-      }
-      else if (control == 0) //cargarPreset
-      {
-        switch (presetID){
-          case 1:
-            escalaSize = escalaSizePreset1;
-            for (uint8_t i = 0; i < 16; i++) escala[i] = escalaPreset1[i];
-            break;
-          case 2:
-            escalaSize = escalaSizePreset2;
-            for (uint8_t i = 0; i < 16; i++) escala[i] = escalaPreset2[i];
-            break;
-          case 3:
-            escalaSize = escalaSizePreset3;
-            for (uint8_t i = 0; i < 16; i++) escala[i] = escalaPreset3[i];
-            break;
-          case 4:
-            escalaSize = escalaSizePreset4;
-            for (uint8_t i = 0; i < 16; i++) escala[i] = escalaPreset4[i];
-            break;
-        }
-      }
-    }*/
-    
     private:
-    uint8_t puertoT, puertoCV, puertoG, puertoCV2, secuenciar, cabezal, secuencia[64][3], escala[16], secuenciaCant, secuenciaCantTemp, notasSec; // tratar de usar una variable para el tamaño de escala[]
-//    uint8_t escalaPreset1[16], escalaPreset2[16], escalaPreset3[16], escalaPreset4[16]; // tratar de usar una variable para el tamaño de escalaPreset#[] // y ver por qué no se pueden agregar 8 presets, quizas sobrepasa el limite de memoria
+    uint8_t puertoT, puertoCV, puertoG, puertoCV2, secuenciar, cabezal, escala[16], secuenciaCant, secuenciaCantTemp, notasSec; // tratar de usar una variable para el tamaño de escala[]
+
+    // Cada paso de la secuencia ocupa 2 bytes (antes eran 3) para ahorrar RAM:
+    //   secuencia[paso][0] -> bit 7 = gate (1 = suena, 0 = silencio), bits 0-6 = indice de nota
+    //   secuencia[paso][1] -> valor de CV aleatorio (0-255)
+    uint8_t secuencia[64][2];
+
+    // Lectura/escritura de un paso (encapsulan el empaquetado de bits)
+    uint8_t pasoNota(uint8_t paso) { return secuencia[paso][0] & 0x7F; }
+    uint8_t pasoGate(uint8_t paso) { return secuencia[paso][0] >> 7; }
+    uint8_t pasoCV(uint8_t paso)   { return secuencia[paso][1]; }
+    void escribirPaso(uint8_t paso, uint8_t nota, uint8_t gate, uint8_t cv)
+    {
+      secuencia[paso][0] = (gate ? 0x80 : 0x00) | (nota & 0x7F);
+      secuencia[paso][1] = cv;
+    }
     int8_t multiplicadorTemporal;
     long poteSnapshot, timingCapPrev;
     unsigned long futureMillisT, sqrEnvCycle;

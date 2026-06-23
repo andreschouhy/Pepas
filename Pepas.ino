@@ -28,9 +28,9 @@ long poteSnapshotGral;
 const unsigned int cantTaps = 16;
 unsigned long tap[cantTaps];
 unsigned int tempo = 0;
-float ajusteFinoVel = 1.0;
 
-uint8_t mapa[34][2] = {
+// Mapa de scancode PS/2 -> nota MIDI. Vive en flash (PROGMEM) para no gastar RAM.
+const uint8_t mapa[34][2] PROGMEM = {
 {0x1A,21}, // z
 {0x1B,22}, // s
 {0x22,23}, // x
@@ -69,11 +69,12 @@ uint8_t mapa[34][2] = {
 
 uint8_t K2Midi(uint8_t val)
 {
-  for(uint8_t i = 0; i < 34; i++) if(val == mapa[i][0]) return mapa[i][1];
+  for(uint8_t i = 0; i < 34; i++) if(val == pgm_read_byte(&mapa[i][0])) return pgm_read_byte(&mapa[i][1]);
   return 0;
 }
 
-uint8_t mapaNum[10][2] = {
+// Mapa de scancode PS/2 -> digito del teclado numerico. Tambien en flash.
+const uint8_t mapaNum[10][2] PROGMEM = {
 {0x70,0}, // 0
 {0x69,1}, // 1
 {0x72,2}, // 2
@@ -88,7 +89,7 @@ uint8_t mapaNum[10][2] = {
 
 int8_t K2Num(uint8_t val)
 {
-  for(uint8_t i = 0; i < 10; i++) if(val == mapaNum[i][0]) return mapaNum[i][1];
+  for(uint8_t i = 0; i < 10; i++) if(val == pgm_read_byte(&mapaNum[i][0])) return pgm_read_byte(&mapaNum[i][1]);
   return -1;
 }
 
@@ -272,10 +273,16 @@ void enviar(uint8_t valor)
 {
   inhibiting = true;
   holdClock();
-  ps2Write(valor); // send byte to PS/2 device
+  ps2Write(valor); // enviar el byte al dispositivo PS/2
   holdData();
   releaseClock();
-  while(curbit < 11) {} // wait until receive complete - MAY HANG!
+  // Esperar a que termine la transmision (curbit llega a 11), pero con un timeout
+  // para no colgarse si el teclado no responde. Antes era un while infinito.
+  unsigned long inicioEnvio = millis();
+  while(curbit < 11)
+  {
+    if(millis() - inicioEnvio > 50) break; // margen de sobra para 11 bits
+  }
 }
 
 void triggerLED(uint8_t _id, uint8_t _estado)
@@ -317,10 +324,9 @@ void insertarTap() // esta funcion esta en desarrollo, aun no esta funcional
 
 unsigned int concatenar(unsigned int a, uint8_t b)
 {
-  if(a < 6553) //65535/10
-  {
+  if(a < 6553) //65535/10, evita que el unsigned int se desborde al agregar un digito
     return ((a * 10) + b);
-  }
+  return a; // si ya no entra otro digito, devolver el valor sin cambios (antes no devolvia nada)
 }
 
 //void atualizarLED()
