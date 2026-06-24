@@ -38,8 +38,7 @@ void eventoTeclado()
       }
       presionadas[cantPresionadas] = 0;
       cantPresionadas--;
-      //atualizarLED();
-      
+
       if(K2Midi(Byte) > 0 && E0Key == 0) // soltando una nota
       {
         notasPresionadas--;
@@ -101,8 +100,7 @@ void eventoTeclado()
       {
         cantPresionadas++;
         presionadas[cantPresionadas - 1] = Byte;
-        //atualizarLED();
-        
+
         if (K2Midi(Byte) > 0 && E0Key == 0)  // presionando una nota
         {
           notasPresionadas++;

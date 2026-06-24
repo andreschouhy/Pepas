@@ -1,7 +1,7 @@
 class Pepa
 {
   public:
-    Pepa(uint8_t _puertoCV, uint8_t _puertoT, uint8_t _puertoCV2, uint8_t _puertoG, int _pote, uint8_t _modoSqrEnv, uint8_t _id)
+    Pepa(uint8_t _puertoCV, uint8_t _puertoT, uint8_t _puertoCV2, uint8_t _puertoG, uint8_t _modoSqrEnv, uint8_t _id)
     {
       id = _id;
       modoSqrEnv = _modoSqrEnv;
@@ -23,7 +23,7 @@ class Pepa
       multiplicador = multiplicadorTemporal = 1;
     }
     
-    uint8_t escalaSize, tamanoEscalaLimite, mantener, control, dividiendo, octava, modoSqrEnv, id, disparar;
+    uint8_t escalaSize, mantener, control, dividiendo, octava, modoSqrEnv, id, disparar;
     long multiplicador, velocidad, timingCap;
     int probabilidad, mutacion, clockCount;
     uint8_t numero;
@@ -37,22 +37,8 @@ class Pepa
     {
       velocidad = velocidadGeneral; // la velocidad de cada pepa sigue a la general
 
-      if(control == 1)
-      {/*( // condicional comentado para reemplazar con velocidad general
-        velocidad = (pote * precision) + poteSnapshot;
-        
-        if(velocidad > (1024L * precision)) 
-        {
-          velocidad = 1024L * precision;
-          poteSnapshot = velocidad - (pote * precision);
-        }
-        else if(velocidad <= (1L * precision)) 
-        {
-          velocidad = 1L * precision;
-          poteSnapshot = velocidad - (pote * precision);
-        }*/
-      }
-      else if (control == 2)
+      // control == 1 (velocidad por pote) ya no se maneja aca: la velocidad sigue a velocidadGeneral
+      if (control == 2)
       {
         probabilidad = pote + poteSnapshot;
         
@@ -243,10 +229,12 @@ class Pepa
             resetearEscala(); //resetear escala cuando esta en mantener
         }
         
+        if (escalaSize >= 16) return; // escala[] llena (16 notas), no agregar mas para no pasarse del array
+
         escalaSize++;
         escala[escalaSize - 1] = K2Midi(tecla);
-      
-        if (escalaSize == 1) 
+
+        if (escalaSize == 1)
         {
           if (mantener == 1)
           {
@@ -271,19 +259,21 @@ class Pepa
       {
         uint8_t nota = K2Midi(tecla);
         int8_t index = buscarNota(nota);
-        
-        while (index > -1)
+
+        // decrementar SOLO si la nota estaba en esta escala. Antes se decrementaba siempre,
+        // lo que con escalaSize==0 desbordaba el uint8_t a 255 (probable causa del cuelgue al soltar).
+        while (index > -1 && escalaSize > 0)
         {
-          for (int8_t i = index; i < escalaSize; i++) 
+          for (int8_t i = index; i < escalaSize - 1; i++) // i+1 nunca sale del array
           {
             escala[i] = escala[i+1];
           }
-          
+
+          escalaSize--;
+          escala[escalaSize] = 0; // limpiar el slot que quedo libre
+
           index = buscarNota(nota); //en caso de que un valor este duplicado, chequear de nuevo
         }
-        
-        escala[escalaSize] = 0;
-        escalaSize--;
       }
     }
     

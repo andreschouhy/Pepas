@@ -1,6 +1,5 @@
-void setup() 
+void setup()
 {
-  //pinMode(ledPin, OUTPUT);
   pinMode(13, OUTPUT);
   digitalWrite(13, LOW);
   
@@ -35,10 +34,10 @@ void setup()
   pinMode(extClockPin, INPUT_PULLUP);
   clockSwitch = digitalRead(extClockSwitchPin);
   
-  pepas[0] = new Pepa(5, 4, 6, 7, analogRead(A0), 0, 0);
-  pepas[1] = new Pepa(9, 8, 10, 12, analogRead(A0), 0, 1);
-  pepas[2] = new Pepa(11, 11, 11, 11, analogRead(A0), 1, 2);
-  pepas[3] = new Pepa(13, 13, 13, 13, analogRead(A0), 1, 3);
+  pepas[0] = new Pepa(5, 4, 6, 7, 0, 0);
+  pepas[1] = new Pepa(9, 8, 10, 12, 0, 1);
+  pepas[2] = new Pepa(11, 11, 11, 11, 1, 2);
+  pepas[3] = new Pepa(13, 13, 13, 13, 1, 3);
   
   releaseClock();
   releaseData();

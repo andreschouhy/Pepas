@@ -5,15 +5,11 @@
 
 #include "Arduino.h"
 
-volatile byte state = LOW;
-
-const int8_t ledPin = 13;
 const int8_t extClockPin = 0;
 const int8_t extClockSwitchPin = 1;
 const int8_t multTemp = 8; // 8
 const unsigned int precision = 1000; // esto aumenta la precision matematica en divisiones. 1000
 const unsigned long capacidad = 65536L * precision; // (2 ^ 16)
-//int8_t ledState = LOW;
 int8_t cantPresionadas, notasPresionadas, pausa, E0Key, F0Byte = 0;
 const uint8_t cantPepas = 4;
 uint8_t presionadas[20];
@@ -209,19 +205,7 @@ static inline void ps2Write(uint8_t Byte) {
   curbit = parity = ack = 0;
 }
 
-// Utility function to convert hex into number
-int fromHex(char ch) {
-  if(ch >= '0' && ch <= '9')
-    return ch - '0';
-  else if(ch >= 'A' && ch <= 'F')
-    return ch - 'A' + 10;
-  else if(ch >= 'a' && ch <= 'f')
-    return ch - 'a' + 10;
-
-  return 0;
-}
-
-void setPwmFrequency(int pin, int divisor) 
+void setPwmFrequency(int pin, int divisor)
 {
   uint8_t mode;
   if(pin == 5 || pin == 6 || pin == 9 || pin == 10) 
@@ -328,9 +312,3 @@ unsigned int concatenar(unsigned int a, uint8_t b)
     return ((a * 10) + b);
   return a; // si ya no entra otro digito, devolver el valor sin cambios (antes no devolvia nada)
 }
-
-//void atualizarLED()
-//{
-  //if (cantPresionadas > 0) digitalWrite(ledPin, HIGH);
-  //else digitalWrite(ledPin, LOW);
-//}
