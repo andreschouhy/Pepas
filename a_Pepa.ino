@@ -123,8 +123,7 @@ class Pepa
               notaOut = min(notaOut, 81);
               analogWrite(puertoCV, map(notaOut, 21, 81, 0, 255));
               trigger(10);
-              triggerLED(id, 1);
-              triggerLED(id, 0);
+              triggerLED(id);
               analogWrite(puertoCV2, random(255));
               digitalWrite(puertoG, HIGH);
             }
@@ -135,9 +134,8 @@ class Pepa
               
               if (sqrEnvCycle > (capacidad * (map(21, 21, 49, 0, 100)/100.0))) // este condicional es para que no dispare con notaOut = 21, no deberia de todas formas
               { 
-                digitalWrite(puertoG, HIGH); 
-                triggerLED(id,1);
-                triggerLED(id,0);
+                digitalWrite(puertoG, HIGH);
+                triggerLED(id);
               }
               
               if (clockSwitch == true) 
@@ -160,8 +158,7 @@ class Pepa
               notaOut = min(notaOut, 81);
               analogWrite(puertoCV, map(notaOut, 21, 81, 0, 255));
               trigger(10);
-              triggerLED(id, 1);
-              triggerLED(id, 0);
+              triggerLED(id);
               analogWrite(puertoCV2, pasoCV(cabezal));
               digitalWrite(puertoG, HIGH);
             }
@@ -174,8 +171,7 @@ class Pepa
                 sqrEnvCycle = map(notaOut, 21, 49, 0, 24);
               
               digitalWrite(puertoG, HIGH);
-              triggerLED(id,1);
-              triggerLED(id,0);
+              triggerLED(id);
             }
           }
           else digitalWrite(puertoG, LOW);

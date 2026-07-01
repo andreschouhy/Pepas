@@ -160,17 +160,31 @@ int8_t buscar(uint8_t valor)
   return -1;
 }
 
-void triggerLED(uint8_t _id, uint8_t _estado)
+// Feedback de nota-on del canal seleccionado. Antes parpadeaba el LED de Num Lock del
+// teclado por PS/2: cada nota disparaba enviar() bloqueante (con swap de interrupcion e
+// inhibicion del bus) DENTRO de actualizar(), metiendo varios ms de jitter en la secuencia.
+// Ahora es un LED en GPIO comun con parpadeo temporizado no bloqueante, al estilo de
+// trigger()/triggerLoop(): triggerLED() solo prende el LED y anota cuando apagarlo, y
+// notaLedLoop() (llamada en loop()) lo apaga sin bloquear. digitalWrite es ~microsegundos.
+const int8_t notaLedPin = A1;        // GPIO libre (analogico A1 = digital 15)
+const uint8_t notaLedDuracion = 10;  // en unidades de currentMillis (~80ms con multTemp=8)
+unsigned long notaLedOffMillis = 0;
+
+void triggerLED(uint8_t _id)
 {
-  if(_id == selector){
-    attachInterrupt(CLOCK_PIN_INT, ps2int_write, FALLING);
-    uint8_t estadosLEDcopia = estadosLED;
-    bitWrite(estadosLEDcopia, 1, _estado);
-    enviar(0xED);
-    enviar(estadosLEDcopia);
-    attachInterrupt(CLOCK_PIN_INT, ps2int_read, FALLING);
-    releaseClock();
-    inhibiting = false;
+  if (_id == selector)
+  {
+    digitalWrite(notaLedPin, HIGH);
+    notaLedOffMillis = currentMillis + notaLedDuracion;
+  }
+}
+
+void notaLedLoop()
+{
+  if (notaLedOffMillis != 0 && currentMillis >= notaLedOffMillis)
+  {
+    notaLedOffMillis = 0;
+    digitalWrite(notaLedPin, LOW);
   }
 }
 

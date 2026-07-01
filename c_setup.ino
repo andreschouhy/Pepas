@@ -29,7 +29,10 @@ void setup()
   digitalWrite(11, LOW);
 
   pinMode(A0, INPUT);
-  
+
+  pinMode(notaLedPin, OUTPUT);      // LED de feedback de nota-on (canal seleccionado)
+  digitalWrite(notaLedPin, LOW);
+
   pinMode(extClockSwitchPin, INPUT);
   pinMode(extClockPin, INPUT_PULLUP);
   clockSwitch = digitalRead(extClockSwitchPin);
@@ -129,7 +132,9 @@ void loop()
   }
   
   eventoTeclado();
-  
+
+  notaLedLoop(); // apagar el LED de nota-on cuando venza su parpadeo (no bloqueante)
+
   pote = analogRead(A0);
   
   if(controlarVelocidad == 1)
