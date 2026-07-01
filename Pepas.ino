@@ -1,29 +1,52 @@
-// logre eliminar los delay de eventoTeclado, pero se cuelga al soltar una nota sin el "mantener" activo (aparentemente solo a veces)
-// con shift, no esta propagando los cambios de octava
-// ver si se generan bardos al volverse loco con las notas y el shift
-// le quite la funcionalidad de presets porque sospechaba que saturaba la memoria y se tildaba por eso
+// Reescritura de la lectura de teclado (PROBAR EN EL DISPOSITIVO):
+//   - driver PS/2 movido a ps2.h/ps2.cpp (transporte + decodificador)
+//   - el decodificador (ps2NextKey) drena el buffer entero sin la pausa de ~512ms; antes
+//     esa pausa dejaba desbordar el ring buffer y se perdian break codes -> el conteo de
+//     notas se desincronizaba y el gesto de "una nota resetea la escala en mantener" fallaba
+//   - conteo de notas derivado de presionadas[] (recontarNotas), no de un contador ++/--
+//   - soltar es simetrico/seguro: ya no corrompe presionadas[] con un break huerfano
+// Pendiente/conocido: con shift no se propagan los cambios de octava (subir/bajarOctava solo
+//   actuan sobre pepas[selector]). Presets sacados por sospecha de saturar memoria.
 
 #include "Arduino.h"
+#include "ps2.h"
 
 const int8_t extClockPin = 0;
 const int8_t extClockSwitchPin = 1;
 const int8_t multTemp = 8; // 8
 const unsigned int precision = 1000; // esto aumenta la precision matematica en divisiones. 1000
 const unsigned long capacidad = 65536L * precision; // (2 ^ 16)
-int8_t cantPresionadas, notasPresionadas, pausa, E0Key, F0Byte = 0;
+int8_t cantPresionadas = 0, notasPresionadas = 0;
 const uint8_t cantPepas = 4;
 uint8_t presionadas[20];
 uint8_t selector = 0;
 uint8_t shift = 0;
 uint8_t estadosLED = 0;
 long pote = 0;
-long prevMillis, futurMillis, currentMillis, clockMillisPrev, clockMillisPrevPrev, clockDifCurrent, clockDifPrev, deltaMillis = 0;
+long prevMillis, currentMillis, clockMillisPrev, clockMillisPrevPrev, clockDifCurrent, clockDifPrev, deltaMillis = 0;
 boolean clockCheck, clockSwitch, controlarVelocidad, setTempo = 0;
 long velocidadGeneral = 512L * precision;
 long poteSnapshotGral;
 const unsigned int cantTaps = 16;
 unsigned long tap[cantTaps];
 unsigned int tempo = 0;
+
+// Scancodes PS/2 (set 2) usados por el dispatcher. Antes eran numeros magicos.
+#define SC_LCTRL    0x14
+#define SC_LALT     0x11
+#define SC_LSHIFT   0x12
+#define SC_F1       0x05
+#define SC_F2       0x06
+#define SC_CAPS     0x58  // mantener
+#define SC_SPACE    0x29  // secuenciar
+#define SC_BKSP     0x66  // resetear secuencia
+#define SC_TAB      0x0D  // cambiar selector
+#define SC_ESC      0x76  // reiniciar cabezal (shift+ESC: tap tempo, desconectado)
+#define SC_BACKTICK 0x0E  // sincronizar
+#define SC_KP_MULT  0x7C  // multiplicar velocidad
+#define SC_KP_DIV   0x4A  // dividir velocidad (con E0)
+#define SC_UP       0x75  // subir octava (con E0)
+#define SC_DOWN     0x72  // bajar octava (con E0)
 
 // Mapa de scancode PS/2 -> nota MIDI. Vive en flash (PROGMEM) para no gastar RAM.
 const uint8_t mapa[34][2] PROGMEM = {
@@ -89,122 +112,6 @@ int8_t K2Num(uint8_t val)
   return -1;
 }
 
-#define CLOCK_PIN_INT 1
-const int8_t DataPin = 2;
-const int8_t ClockPin = 3;
-
-#define BUFFER_SIZE 45
-static volatile uint8_t buffer[BUFFER_SIZE];
-static volatile uint8_t head, tail;
-static volatile bool inhibiting;
-
-// Open collector utility routines
-static inline void holdClock() {
-  digitalWrite(ClockPin, LOW); // pullup off
-  pinMode(ClockPin, OUTPUT); // pull clock low
-}
-
-static inline void releaseClock() {
-  pinMode(ClockPin, INPUT); // release line
-  digitalWrite(ClockPin, HIGH); // pullup on
-}
-
-static inline void holdData() {
-  digitalWrite(DataPin, LOW); // pullup off
-  pinMode(DataPin, OUTPUT); // pull clock low
-}
-
-static inline void releaseData() {
-  pinMode(DataPin, INPUT); // release line
-  digitalWrite(DataPin, HIGH); // pullup on
-}
-
-// The ISR for the external interrupt in write mode
-void ps2int_read() {
-  static uint8_t bitcount=0, incoming=0;
-  static uint32_t prev_ms=0;
-  uint32_t now_ms;
-  uint8_t n, val;
-
-  if(inhibiting)
-    return; // do nothing when clock manipulated by Arduino
-
-  val = digitalRead(DataPin);
-  now_ms = millis();
-  if (now_ms - prev_ms > 250) {
-    bitcount = 0;
-    incoming = 0;
-  }
-  prev_ms = now_ms;
-  n = bitcount - 1;
-  if (n <= 7) {
-    incoming |= (val << n);
-  }
-  bitcount++;
-  if (bitcount == 11) {
-    uint8_t i = head + 1;
-    if (i >= BUFFER_SIZE) i = 0;
-    if (i != tail) {
-      buffer[i] = incoming;
-      head = i;
-    }
-    bitcount = 0;
-    incoming = 0;
-  }
-}
-
-static volatile uint8_t writeByte;
-static volatile uint8_t curbit = 0, parity = 0, ack;
-
-// The ISR for the external interrupt in read mode
-void ps2int_write() {
-  if(curbit < 8) {
-    if(writeByte & 1) {
-      parity ^= 1;
-      digitalWrite(DataPin, HIGH);
-    } else
-      digitalWrite(DataPin, LOW);
-
-    writeByte >>= 1;
-  } else if(curbit == 8) { // parity
-    if(parity)
-      digitalWrite(DataPin, LOW);
-    else
-      digitalWrite(DataPin, HIGH);
-  } else if(curbit == 9) { // time to let go
-    releaseData();
-  } else { // time to check device ACK and hold clock again
-    holdClock();
-    ack = !digitalRead(DataPin);
-  }
-
-  curbit++;
-}
-
-// Check if data available in ring buffer
-bool ps2Available() {
-  return head != tail;
-}
-
-// Read a byte from ring buffer (or return \0 if empty)
-static inline uint8_t ps2Read() {
-  uint8_t c, i;
-
-  i = tail;
-  if (i == head) return 0;
-  i++;
-  if (i >= BUFFER_SIZE) i = 0;
-  c = buffer[i];
-  tail = i;
-  return c;
-}
-
-// Prepare a byte for sending to PS/2 device
-static inline void ps2Write(uint8_t Byte) {
-  writeByte = Byte;
-  curbit = parity = ack = 0;
-}
-
 void setPwmFrequency(int pin, int divisor)
 {
   uint8_t mode;
@@ -251,22 +158,6 @@ int8_t buscar(uint8_t valor)
 {
   for(int8_t i = 0; i < cantPresionadas; i++) if(presionadas[i] == valor) return i;
   return -1;
-}
-
-void enviar(uint8_t valor)
-{
-  inhibiting = true;
-  holdClock();
-  ps2Write(valor); // enviar el byte al dispositivo PS/2
-  holdData();
-  releaseClock();
-  // Esperar a que termine la transmision (curbit llega a 11), pero con un timeout
-  // para no colgarse si el teclado no responde. Antes era un while infinito.
-  unsigned long inicioEnvio = millis();
-  while(curbit < 11)
-  {
-    if(millis() - inicioEnvio > 50) break; // margen de sobra para 11 bits
-  }
 }
 
 void triggerLED(uint8_t _id, uint8_t _estado)

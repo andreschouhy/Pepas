@@ -41,7 +41,7 @@ void setup()
   
   releaseClock();
   releaseData();
-  head = tail = 0;
+  ps2Init();
   attachInterrupt(CLOCK_PIN_INT, ps2int_read, FALLING);
   
   delay(500 * multTemp);

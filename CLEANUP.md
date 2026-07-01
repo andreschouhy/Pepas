@@ -8,20 +8,24 @@ Ya hecho en esta pasada (no rehacer): borrado de codigo muerto (`state`, `fromHe
 `tamanoEscalaLimite`, `_pote`, `atualizarLED`, rama vacia `control==1`) y guardas de limites en
 `Pepa::agregar()` y `Pepa::quitar()` (esta ultima arregla el desborde de `escalaSize` al soltar notas).
 
+Hecho 2026-06-30 (FALTA PROBAR EN EL DISPOSITIVO):
+- #1 Driver PS/2 extraido a `ps2.h`/`ps2.cpp` (incluye el decodificador `ps2NextKey`).
+- #3 Scancodes con nombre (`SC_*` en `Pepas.ino`), dispatcher reescrito con ellos.
+- Reescritura de `eventoTeclado` en `manejarPresionar`/`manejarSoltar` sobre eventos decodificados.
+- Fix de transporte: el decodificador drena el buffer entero, sin la pausa de ~512ms que
+  desbordaba el ring buffer y perdia break codes (causa de la escala que no se reseteaba).
+- Conteo de notas via `recontarNotas()` desde `presionadas[]` (fuente unica de verdad);
+  soltar es simetrico y no corrompe `presionadas[]` con un break huerfano.
+- #5 `insertarTap()` desconectado de Shift+ESC (sigue definido en `Pepas.ino`, sin usar).
+
 ---
 
-## 1. Extraer el driver PS/2 a su propio modulo  (la grande)
-`Pepas.ino` hace 4 cosas a la vez: globales, driver PS/2, config de PWM y helpers de la app.
-El driver PS/2 (~150 lineas) es autocontenido y no depende de la logica de Pepas:
-- ISRs `ps2int_read` / `ps2int_write`
-- ring buffer (`buffer`, `head`, `tail`, `ps2Available`, `ps2Read`, `ps2Write`)
-- helpers open-collector (`holdClock`/`releaseClock`/`holdData`/`releaseData`)
-- `BUFFER_SIZE`, `inhibiting`, pines `DataPin`/`ClockPin`/`CLOCK_PIN_INT`
+## 1. Extraer el driver PS/2 a su propio modulo  (HECHO 2026-06-30)
+Movido a `ps2.h`/`ps2.cpp`: ISRs, ring buffer, helpers open-collector, `inhibiting`, pines,
+`enviar` y el decodificador `ps2NextKey`. `Pepas.ino` queda como glue de la app. Las variables
+`volatile` compartidas con las ISR siguen `volatile`. `head`/`tail` se resetean via `ps2Init()`.
 
-Mover a `ps2.h`/`ps2.cpp` (o como minimo a un `d_ps2.ino`). Deja `Pepas.ino` como "glue" de la app.
-Cuidado: las variables son `volatile` y compartidas con las ISR; mantener `volatile` al mover.
-
-## 2. Deduplicar el patron broadcast del dispatcher  (`b_eventoTeclado.ino`)
+## 2. Deduplicar el patron broadcast del dispatcher  (`b_eventoTeclado.ino`)  (PENDIENTE)
 El bloque `if(shift) for(...) pepas[i]->X(arg); else pepas[selector]->X(arg);` se repite ~18 veces.
 Reemplazar por un macro:
 ```cpp
@@ -44,10 +48,16 @@ lado ayudan pero `#define SC_LCTRL 0x14` etc. harian el dispatcher autoexplicati
 desincronice de los datos si se agregan/quitan filas.
 
 ## 5. Varios menores
-- Declaraciones multi-variable enganosas: `int8_t cantPresionadas, ..., F0Byte = 0;` (`Pepas.ino`)
-  solo inicializa `F0Byte`. Es inofensivo (globales arrancan en 0) pero confunde; idem la linea de
-  `boolean clockCheck, ...`. Inicializar cada una o separar.
+- Declaraciones multi-variable enganosas: la linea `int8_t cantPresionadas, ..., F0Byte = 0;` ya se
+  limpio (se quitaron `pausa`/`E0Key`/`F0Byte`, y `cantPresionadas`/`notasPresionadas` se inicializan).
+  Queda la linea `boolean clockCheck, clockSwitch, controlarVelocidad, setTempo = 0;` (`Pepas.ino`):
+  solo inicializa `setTempo`. Inofensivo (globales arrancan en 0) pero conviene separar/inicializar.
 - `Pepa::triggerLoopCheck()` es un wrapper de paso directo a `triggerLoop()` privado; documentar por
   que existe o exponer `triggerLoop`.
-- `insertarTap()` esta marcada "no funcional" pero esta cableada a Shift+ESC (`b_eventoTeclado.ino`).
-  Decidir: terminarla o desconectarla para que no dispare comportamiento a medias.
+- `insertarTap()` (HECHO 2026-06-30): desconectada de Shift+ESC. Sigue definida en `Pepas.ino` sin
+  usar. Decidir si terminarla (tap tempo) o borrarla.
+
+## 6. Bug conocido a investigar: octava + shift  (`b_eventoTeclado.ino`)
+Con `shift` activo, `subirOctava`/`bajarOctava` (flechas) siguen actuando solo sobre `pepas[selector]`,
+no se propagan a todas. La reescritura mantuvo ese comportamiento a proposito (fix fiel). Revisar si
+deberia ser broadcast como el resto de los controles.
