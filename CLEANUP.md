@@ -25,18 +25,11 @@ Movido a `ps2.h`/`ps2.cpp`: ISRs, ring buffer, helpers open-collector, `inhibiti
 `enviar` y el decodificador `ps2NextKey`. `Pepas.ino` queda como glue de la app. Las variables
 `volatile` compartidas con las ISR siguen `volatile`. `head`/`tail` se resetean via `ps2Init()`.
 
-## 2. Deduplicar el patron broadcast del dispatcher  (`b_eventoTeclado.ino`)  (PENDIENTE)
-El bloque `if(shift) for(...) pepas[i]->X(arg); else pepas[selector]->X(arg);` se repite ~18 veces.
-Reemplazar por un macro:
-```cpp
-#define BROADCAST(call) do { \
-  if (shift) for (uint8_t i = 0; i < cantPepas; i++) pepas[i]->call; \
-  else pepas[selector]->call; \
-} while(0)
-// uso: BROADCAST(controlarCTRL(0));
-```
-Tambien: el bloque del selector->LED en TAB son cuatro `if(selector==N)` casi identicos
-(`b_eventoTeclado.ino`, presionando 0x0D); se puede reemplazar por una pequena tabla de bits.
+## 2. Deduplicar el patron broadcast del dispatcher  (`b_eventoTeclado.ino`)  (HECHO 2026-07-02)
+El bloque `if(shift) for(...) pepas[i]->X(arg); else pepas[selector]->X(arg);` (repetido ~18 veces)
+se reemplazo por el macro `BROADCAST(call)` (definido arriba de `manejarPresionar`). El bloque del
+teclado numerico sigue manual: su argumento referencia el miembro `numero`, que el macro no puede
+calificar. El bloque selector->LED del TAB ya se habia extraido a `actualizarLEDSelector()`.
 
 ## 3. Nombrar los scancodes  (`b_eventoTeclado.ino`)
 Los scancodes son numeros magicos (`0x14`, `0x11`, `0x05`, `0x29`, `0x58`...). Los comentarios al
@@ -88,12 +81,18 @@ Hecho 2026-07-02 (Tier-1 + feature de persistencia, FALTA PROBAR EN DISPOSITIVO)
   porque Ctrl sigue apretado (si no, el loop pisaria el tempo cargado desde el pote).
   NOTA: guardado automatico al apagar necesita hardware (detector de brownout + cap reservorio).
 
-Pendiente:
-- **Watchdog timer** (`avr/wdt.h`). Auto-reset si el sketch se cuelga. Cuidado: el boot animation
-  hace `setup()` de ~10s, asi que habilitar el WDT DESPUES de setup y `wdt_reset()` en cada `loop()`.
-  Cambio aislado para verificar boot en el dispositivo con limpieza.
+Hecho 2026-07-02 (segunda pasada de robustez):
+- **Watchdog timer** (`avr/wdt.h`). `wdt_enable(WDTO_4S)` al final de `setup()` (despues del boot de
+  ~10s, si no lo dispararia), `wdt_reset()` al inicio de cada `loop()`. Si el loop se cuelga >4s, el
+  micro se reinicia solo. `guardarEstado()` hace `wdt_reset()` entre voces para no dispararlo durante
+  el guardado en EEPROM (~1-2s). VERIFICAR EN DISPOSITIVO que el boot completa y que el guardado no
+  reinicia.
+- **Overflow en la sync (backtick).** `bT = aT * aM` (y `* bM`) podia desbordar el `long` de 32 bits
+  con multiplicadores grandes. Ahora se hace en `long long` y se normaliza con `%= capacidad` en vez
+  del `while` (que con basura desbordada podia no converger).
+- **#6 octava + shift** (abajo): resuelto. Con el macro BROADCAST, `subirOctava`/`bajarOctava` ahora
+  se propagan a todas las voces con shift, consistente con el resto de los controles.
 
-## 6. Bug conocido a investigar: octava + shift  (`b_eventoTeclado.ino`)
-Con `shift` activo, `subirOctava`/`bajarOctava` (flechas) siguen actuando solo sobre `pepas[selector]`,
-no se propagan a todas. La reescritura mantuvo ese comportamiento a proposito (fix fiel). Revisar si
-deberia ser broadcast como el resto de los controles.
+## 6. Bug conocido: octava + shift  (`b_eventoTeclado.ino`)  (HECHO 2026-07-02)
+Con `shift`, `subirOctava`/`bajarOctava` (flechas) ahora se propagan a todas las voces (via
+`BROADCAST`), consistente con el resto de los controles. Antes solo afectaban `pepas[selector]`.

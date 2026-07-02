@@ -28,6 +28,15 @@ void actualizarLEDSelector()
   inhibiting = false;
 }
 
+// Aplica una llamada al canal seleccionado, o a todos si shift esta activo. Reemplaza el patron
+// repetido ~18 veces: if(shift) for(i) pepas[i]->X; else pepas[selector]->X;
+// Nota: el argumento NO puede referenciar miembros de Pepa sin calificar (solo se prefija la
+// llamada externa con pepas[_b]->), por eso el bloque del teclado numerico sigue manual.
+#define BROADCAST(call) do {                                        \
+    if (shift) for (uint8_t _b = 0; _b < cantPepas; _b++) pepas[_b]->call; \
+    else pepas[selector]->call;                                     \
+  } while (0)
+
 void manejarPresionar(TeclaEvento &ev)
 {
   uint8_t sc = ev.scancode;
@@ -41,27 +50,15 @@ void manejarPresionar(TeclaEvento &ev)
 
   if (K2Midi(sc) > 0 && !ev.extendida)  // presionando una nota
   {
-    if (shift == 1)
-      for (uint8_t i = 0; i < cantPepas; i++)
-        pepas[i]->agregar(sc);
-    else
-      pepas[selector]->agregar(sc);
+    BROADCAST(agregar(sc));
   }
   else if (sc == SC_CAPS) // mantener
   {
-    if (shift == 1)
-      for (uint8_t i = 0; i < cantPepas; i++)
-        pepas[i]->mantenerSwitch();
-    else
-      pepas[selector]->mantenerSwitch();
+    BROADCAST(mantenerSwitch());
   }
   else if (sc == SC_SPACE) // secuenciar
   {
-    if (shift == 1)
-      for (uint8_t i = 0; i < cantPepas; i++)
-        pepas[i]->secuenciarSwitch();
-    else
-      pepas[selector]->secuenciarSwitch();
+    BROADCAST(secuenciarSwitch());
   }
   else if (sc == SC_BKSP) // resetear secuencia (Ctrl+Shift: cargar el estado guardado)
   {
@@ -72,38 +69,22 @@ void manejarPresionar(TeclaEvento &ev)
       // velocidadGeneral desde el pote; re-anclar el snapshot para que el tempo cargado no se pise.
       poteSnapshotGral = velocidadGeneral - ((long)pote * precision);
     }
-    else if (shift == 1)
-      for (uint8_t i = 0; i < cantPepas; i++)
-        pepas[i]->resetearSecuencia();
     else
-      pepas[selector]->resetearSecuencia();
+      BROADCAST(resetearSecuencia());
   }
   else if (sc == SC_LCTRL && pepas[selector]->control == 0)
   {
     controlarVelocidad = 1;
     poteSnapshotGral = velocidadGeneral - ((long)pote * precision);
-
-    if (shift == 1)
-      for (uint8_t i = 0; i < cantPepas; i++)
-        pepas[i]->controlarCTRL(1);
-    else
-      pepas[selector]->controlarCTRL(1);
+    BROADCAST(controlarCTRL(1));
   }
   else if (sc == SC_LALT && pepas[selector]->control == 0)
   {
-    if (shift == 1)
-      for (uint8_t i = 0; i < cantPepas; i++)
-        pepas[i]->controlarALT(1);
-    else
-      pepas[selector]->controlarALT(1);
+    BROADCAST(controlarALT(1));
   }
   else if (sc == SC_F1 && pepas[selector]->control == 0)
   {
-    if (shift == 1)
-      for (uint8_t i = 0; i < cantPepas; i++)
-        pepas[i]->controlarF1(1);
-    else
-      pepas[selector]->controlarF1(1);
+    BROADCAST(controlarF1(1));
   }
   else if (sc == SC_F2)
   {
@@ -116,9 +97,11 @@ void manejarPresionar(TeclaEvento &ev)
     {
       if (i != selector)
       {
-        long aT = pepas[selector]->timingCap;
+        // Cuentas en 64 bits: aT (hasta ~capacidad) * multiplicadores (hasta 32*32) desborda
+        // un long de 32 bits. Antes se hacia en long y el while podia quedar con basura.
+        long long aT = pepas[selector]->timingCap;
         long aM = pepas[selector]->multiplicador;
-        long bT = pepas[i]->timingCap;
+        long long bT = pepas[i]->timingCap;
         long bM = pepas[i]->multiplicador;
 
         if (pepas[selector]->dividiendo == 0)
@@ -131,10 +114,10 @@ void manejarPresionar(TeclaEvento &ev)
         else
           bT = bT / bM;
 
-        while (bT > capacidad)
-          bT -= capacidad;
+        bT %= (long long)capacidad;      // normalizar sin desbordar (reemplaza el while)
+        if (bT < 0) bT += capacidad;
 
-        pepas[i]->timingCap = bT;
+        pepas[i]->timingCap = (long)bT;
         pepas[i]->velocidad = pepas[selector]->velocidad;
       }
     }
@@ -195,29 +178,21 @@ void manejarPresionar(TeclaEvento &ev)
   }
   else if (sc == SC_KP_MULT) // multiplicar velocidad
   {
-    if (shift == 1)
-      for (uint8_t i = 0; i < cantPepas; i++)
-        pepas[i]->controlarMult(1);
-    else
-      pepas[selector]->controlarMult(1);
+    BROADCAST(controlarMult(1));
   }
 
   // estos quedan como if independientes: comparten scancode con teclas no extendidas (E0)
   if (sc == SC_KP_DIV && ev.extendida) // dividir velocidad
   {
-    if (shift == 1)
-      for (uint8_t i = 0; i < cantPepas; i++)
-        pepas[i]->controlarDiv(1);
-    else
-      pepas[selector]->controlarDiv(1);
+    BROADCAST(controlarDiv(1));
   }
-  if (sc == SC_UP && ev.extendida)   // flecha arriba: subir octava
+  if (sc == SC_UP && ev.extendida)   // flecha arriba: subir octava (broadcast con shift)
   {
-    pepas[selector]->subirOctava();
+    BROADCAST(subirOctava());
   }
-  if (sc == SC_DOWN && ev.extendida) // flecha abajo: bajar octava
+  if (sc == SC_DOWN && ev.extendida) // flecha abajo: bajar octava (broadcast con shift)
   {
-    pepas[selector]->bajarOctava();
+    BROADCAST(bajarOctava());
   }
   if (sc == SC_DEL && ev.extendida)  // Supr: soft reset / panico con Ctrl+Alt (mimetiza Ctrl+Alt+Del)
   {
@@ -245,36 +220,20 @@ void manejarSoltar(TeclaEvento &ev)
 
   if (K2Midi(sc) > 0 && !ev.extendida) // soltando una nota
   {
-    if (shift == 1)
-      for (uint8_t i = 0; i < cantPepas; i++)
-        pepas[i]->quitar(sc);
-    else
-      pepas[selector]->quitar(sc);
+    BROADCAST(quitar(sc));
   }
   else if (sc == SC_LCTRL)
   {
     controlarVelocidad = 0;
-    if (shift == 1)
-      for (uint8_t i = 0; i < cantPepas; i++)
-        pepas[i]->controlarCTRL(0);
-    else
-      pepas[selector]->controlarCTRL(0);
+    BROADCAST(controlarCTRL(0));
   }
   else if (sc == SC_LALT)
   {
-    if (shift == 1)
-      for (uint8_t i = 0; i < cantPepas; i++)
-        pepas[i]->controlarALT(0);
-    else
-      pepas[selector]->controlarALT(0);
+    BROADCAST(controlarALT(0));
   }
   else if (sc == SC_F1)
   {
-    if (shift == 1)
-      for (uint8_t i = 0; i < cantPepas; i++)
-        pepas[i]->controlarF1(0);
-    else
-      pepas[selector]->controlarF1(0);
+    BROADCAST(controlarF1(0));
   }
   else if (sc == SC_F2)
   {
@@ -288,20 +247,12 @@ void manejarSoltar(TeclaEvento &ev)
   }
   else if (sc == SC_KP_MULT)
   {
-    if (shift == 1)
-      for (uint8_t i = 0; i < cantPepas; i++)
-        pepas[i]->controlarMult(0);
-    else
-      pepas[selector]->controlarMult(0);
+    BROADCAST(controlarMult(0));
   }
 
   if (sc == SC_KP_DIV && ev.extendida) // soltando KP /
   {
-    if (shift == 1)
-      for (uint8_t i = 0; i < cantPepas; i++)
-        pepas[i]->controlarDiv(0);
-    else
-      pepas[selector]->controlarDiv(0);
+    BROADCAST(controlarDiv(0));
   }
   else if (sc == SC_LSHIFT)
   {

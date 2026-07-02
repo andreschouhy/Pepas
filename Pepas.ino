@@ -11,6 +11,7 @@
 #include "Arduino.h"
 #include "ps2.h"
 #include <EEPROM.h>  // persistencia de estado (guardar/cargar patch). Ver d_estado.ino
+#include <avr/wdt.h> // watchdog: auto-reset si el sketch se cuelga (habilitado al final de setup)
 
 const int8_t extClockPin = 0;
 const int8_t extClockSwitchPin = 1;

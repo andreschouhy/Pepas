@@ -54,7 +54,11 @@ void guardarEstado()
   EEPROM.update(addr++, EEPROM_MAGIC1);
   EEPROM.put(addr, velocidadGeneral); addr += sizeof(velocidadGeneral);
   EEPROM.update(addr++, selector);
-  for (uint8_t i = 0; i < cantPepas; i++) addr = pepas[i]->guardarEEPROM(addr);
+  for (uint8_t i = 0; i < cantPepas; i++)
+  {
+    addr = pepas[i]->guardarEEPROM(addr);
+    wdt_reset(); // cada voz es ~0.5s de escritura; patear el WDT para que no dispare durante el guardado
+  }
 }
 
 // Cargar el patch guardado en el arranque. Si el magic no coincide (EEPROM en blanco o layout

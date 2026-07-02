@@ -1,5 +1,9 @@
 void setup()
 {
+  // Apagar el watchdog apenas arranca: si un reset lo dejo activo, el boot (~10s) es mas largo
+  // que el timeout y entraria en loop de reinicio. Se re-habilita al final de setup().
+  wdt_disable();
+
   pinMode(13, OUTPUT);
   digitalWrite(13, LOW);
   
@@ -71,6 +75,12 @@ void setup()
   cargarEstado();          // recuperar el patch guardado (si hay uno valido) antes de arrancar
   actualizarLEDSelector(); // reflejar el canal (0 o el cargado) en los LEDs del teclado
 
+  // Watchdog: si el loop se cuelga y no se resetea el WDT en 4s, el micro se reinicia solo.
+  // Se habilita ACA, despues del boot (~10s de animacion + delays): antes lo dispararia.
+  // Timeout holgado (4s) sobre el peor caso del loop, que es el guardado en EEPROM (~1-2s);
+  // igual guardarEstado() hace wdt_reset() entre voces para no arriesgar.
+  wdt_enable(WDTO_4S);
+
   //Serial.begin(115200);
   //Serial.print("capacidad: ");
   //Serial.println(capacidad);
@@ -79,8 +89,10 @@ void setup()
   //prevMillis = millis() / multTemp;
 }
 
-void loop() 
+void loop()
 {
+  wdt_reset(); // patear el watchdog: si el loop sigue vivo, no se reinicia
+
   currentMillis = millis() / multTemp;
   deltaMillis = currentMillis - prevMillis;
 
