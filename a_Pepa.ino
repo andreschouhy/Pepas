@@ -9,9 +9,18 @@ class Pepa
       puertoT = _puertoT;
       puertoCV2 = _puertoCV2;
       puertoG = _puertoG;
+      reset(); // el resto de los campos a sus valores de encendido (ver reset())
+    }
+
+    // Estado de encendido de la voz. Lo usa el constructor y el factory reset (Ctrl+Shift+Esc),
+    // asi ambos quedan identicos. No toca puertos, modoSqrEnv ni id (config de hardware).
+    // Inicializa TODO campo: new no limpia la memoria, no dejar nada en basura.
+    void reset()
+    {
       futureMillisT = escalaSize = 0;
       mantener = secuenciar = cabezal = timingCap = timingCapPrev = disparar = control = dividiendo = 0;
       secuenciaCantTemp = 8;
+      secuenciaCant = secuenciaCantTemp;
       notasSec = 8;
       octava = 3;
       probabilidad = 1024;
@@ -20,7 +29,22 @@ class Pepa
       sqrEnvCycle = capacidad * .5;
       velocidad  = velocidadGeneral;
       numero = 0;
+      poteSnapshot = 0;
       multiplicador = multiplicadorTemporal = 1;
+      resetearEscala();
+      digitalWrite(puertoG, LOW);
+      analogWrite(puertoCV2, 0);
+    }
+
+    // Soft reset / panico (Ctrl+Alt+Supr): apagar salidas y soltar notas trabadas de la escala,
+    // sin tocar secuencia, tempo, octava ni parametros.
+    void silenciar()
+    {
+      resetearEscala();
+      disparar = 0;
+      control = 0;
+      digitalWrite(puertoG, LOW);
+      analogWrite(puertoCV2, 0);
     }
     
     uint8_t escalaSize, mantener, control, dividiendo, octava, modoSqrEnv, id, disparar;
@@ -398,7 +422,7 @@ class Pepa
         if (numero != 0)
         {
           dividiendo = 0;
-          multiplicadorTemporal = numero;
+          multiplicadorTemporal = min(numero, 32); // cap: numero llega a 255; int8_t se iria a negativo
         }
         numero = 0;
       }
@@ -414,10 +438,10 @@ class Pepa
       else if (estado == 0) 
       {
         control = 0;
-        if (numero != 0) 
+        if (numero != 0)
         {
           dividiendo = 1;
-          multiplicadorTemporal = numero;
+          multiplicadorTemporal = min(numero, 32); // cap: numero llega a 255; int8_t se iria a negativo
         }
         numero = 0;
       }
@@ -433,10 +457,58 @@ class Pepa
     
     void bajarOctava()
     {
-      if (octava > 1) 
+      if (octava > 1)
         octava--;
-      else 
+      else
         octava = 1;
+    }
+
+    // ---- Persistencia (EEPROM) ----
+    // Serializan/deserializan la voz a partir de una direccion y devuelven la siguiente.
+    // EEPROM.update solo escribe bytes que cambian (cuida el limite de ~100k escrituras).
+    int guardarEEPROM(int addr)
+    {
+      EEPROM.update(addr++, octava);
+      EEPROM.update(addr++, secuenciaCantTemp);
+      EEPROM.update(addr++, notasSec);
+      EEPROM.update(addr++, (uint8_t)multiplicadorTemporal);
+      EEPROM.update(addr++, dividiendo);
+      EEPROM.update(addr++, mantener);
+      EEPROM.update(addr++, secuenciar);
+      EEPROM.update(addr++, escalaSize);
+      EEPROM.put(addr, probabilidad); addr += sizeof(probabilidad);
+      EEPROM.put(addr, mutacion);     addr += sizeof(mutacion);
+      for (uint8_t i = 0; i < 16; i++) EEPROM.update(addr++, escala[i]);
+      for (uint8_t i = 0; i < 64; i++) { EEPROM.update(addr++, secuencia[i][0]); EEPROM.update(addr++, secuencia[i][1]); }
+      return addr;
+    }
+
+    int cargarEEPROM(int addr)
+    {
+      octava            = EEPROM.read(addr++);
+      secuenciaCantTemp = EEPROM.read(addr++);
+      notasSec          = EEPROM.read(addr++);
+      multiplicadorTemporal = (int8_t)EEPROM.read(addr++);
+      dividiendo        = EEPROM.read(addr++);
+      mantener          = EEPROM.read(addr++);
+      secuenciar        = EEPROM.read(addr++);
+      escalaSize        = EEPROM.read(addr++);
+      EEPROM.get(addr, probabilidad); addr += sizeof(probabilidad);
+      EEPROM.get(addr, mutacion);     addr += sizeof(mutacion);
+      for (uint8_t i = 0; i < 16; i++) escala[i] = EEPROM.read(addr++);
+      for (uint8_t i = 0; i < 64; i++) { secuencia[i][0] = EEPROM.read(addr++); secuencia[i][1] = EEPROM.read(addr++); }
+
+      // Sanidad: si el EEPROM quedo raro (version vieja, corrupcion), no dejar valores fuera de rango
+      if (secuenciaCantTemp == 0 || secuenciaCantTemp > 64) secuenciaCantTemp = 8;
+      secuenciaCant = secuenciaCantTemp;
+      if (notasSec == 0 || notasSec > 16) notasSec = 8;
+      if (octava < 1 || octava > 4) octava = 3;
+      if (multiplicadorTemporal < 1 || multiplicadorTemporal > 32) multiplicadorTemporal = 1;
+      multiplicador = multiplicadorTemporal;
+      if (escalaSize > 16) escalaSize = 16;
+      if (probabilidad < 1 || probabilidad > 1024) probabilidad = 1024;
+      if (mutacion < 0 || mutacion > 1024) mutacion = 0;
+      return addr;
     }
 
     private:

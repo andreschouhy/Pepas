@@ -2,7 +2,7 @@
 ###### Versión español (scroll down for the english version)
 Pepas es un módulo secuenciador generativo de CV, gates y triggers basado en Arduino para sintetizadores modulares. 
 Está diseñado para ser económico y accesible. Su corazón es un Arduino UNO, y se opera a través de un teclado de computadora PS/2. El resto son componentes básicos de electrónica como resistencias, capacitores y demás.
-Está diseñado en vistas a ser una herramienta de experimentación musical, mediante el caos controlado. Las secuencias producidas por Pepas son únicas e irrepetibles, y no son guardadas en ninguna memoria. Lo que sí es reproducible son los parámetros que controlan el caos. Por ello no está pensado para el compositor musical que sabe exactamente qué notas quiere y en dónde. Sino mas bien para el músico que quiere experimentar ágilmente con ciertos esquemas musicales. El sistema carece de pantallas y menúes complicados, todo está siempre al alcance de los botones. Los unicos indicadores que hay son los LEDs que posee el teclado (uno para indicar que se esta ejecutando una nota en el canal actual y los 2 restantes para indicar el canal actual en formato binario del 0 al 3, o en otras palabras del primero al cuarto). 
+Está diseñado en vistas a ser una herramienta de experimentación musical, mediante el caos controlado. Las secuencias producidas por Pepas son únicas e irrepetibles. Por defecto no se guardan, viven en el momento; pero opcionalmente se puede guardar el estado actual en la memoria del Arduino (Ctrl+Shift+Enter) para recuperarlo al encender. Lo que sí es siempre reproducible son los parámetros que controlan el caos. Por ello no está pensado para el compositor musical que sabe exactamente qué notas quiere y en dónde. Sino mas bien para el músico que quiere experimentar ágilmente con ciertos esquemas musicales. El sistema carece de pantallas y menúes complicados, todo está siempre al alcance de los botones. Como indicadores se usan los 2 LEDs de la derecha del teclado, que muestran el canal actual en formato binario del 0 al 3 (del primero al cuarto canal). El feedback de nota-on (que antes parpadeaba en un LED del teclado) ahora sale por un pin dedicado del Arduino (A1), donde se puede conectar un LED externo; el tercer LED del teclado quedó libre.
 
 Para una introducción más didáctica, vea el siguiente video:
 https://www.youtube.com/watch?v=Qqi9xfu0wNE
@@ -65,33 +65,41 @@ Los parámetros más importantes son:
 - Manteniendo "CTRL" se puede:
   - ingresar la cantidad de pasos de la secuencia fija, desde 1 hasta 64, utilizando el teclado numérico
   - configurar el tempo mediante el uso del potenciómetro
-  - guardar un preset (presionar "CTRL" > presionar "F5","F6","F7" o "F8" > soltar "CTRL")
 - Manteniendo "ALT" se puede:
   - ingresar la cantidad de notas que tiene la escala, desde 1 hasta 16, utilizando el teclado numérico
   - configurar la probabilidad de ejecución de notas mediante el uso del potenciómetro, desde 0% hasta 100%
 - "SHIFT" propaga todo lo que se hace en un canal a los demás canales
 - "FLECHA ARRIBA" y "FLECHA ABAJO" cambia la octava de escala (sólo para los canales de CV)
-- "ESC" tap tempo (actualmente no está funcionando bien)
+- "ESC" reinicia el cabezal de las secuencias de todos los canales (vuelve al primer paso)
 - "F1" configura el parámetro de mutación (para las secuencias fijas) mediante el uso del potenciómetro (presionar "F1" > mover potenciómetro > soltar "F1")
 - "F2" configura el tempo en BPM usando el teclado numerico (presionar "F2" > entrar BPM > soltar "F2")
-- "F5" hasta "F8" activar presets (actualmente sólo de escala, quizás en el futuro se implementen otros parámetros para presetear), esto permite progresiones de acordes (o más bien, arpegios basados en acordes)
-- " * " y " / " (del teclado numérico) multiplica y divide (respectivamente) la velocidad relativa de los pasos de la secuencia por un número entero ingresado mediante el teclado numérico (presionar " * " o " / " > entrar un número > soltar " * " o " / "). Por defecto en 1, si se multiplica por 2, por ejemplo, se disparan 2 notas en el mismo tiempo que antes se disparaba una.
+- " * " y " / " (del teclado numérico) multiplica y divide (respectivamente) la velocidad relativa de los pasos de la secuencia por un número entero ingresado mediante el teclado numérico (presionar " * " o " / " > entrar un número > soltar " * " o " / "). Por defecto en 1, si se multiplica por 2, por ejemplo, se disparan 2 notas en el mismo tiempo que antes se disparaba una. El multiplicador se limita a 32.
+
+### Recuperación, reset y guardado
+- "CTRL"+"ALT"+"SUPR" (soft reset / pánico): silencia notas y gates que hayan quedado trabados y libera los modificadores, sin tocar las secuencias, el tempo ni los parámetros. Es la salida rápida si algo queda colgado (por ejemplo una nota que no se apaga).
+- "CTRL"+"SHIFT"+"ESC" (reset de fábrica): vuelve todo a los valores de encendido.
+- "CTRL"+"SHIFT"+"ENTER" (guardar): guarda el estado actual (secuencias, escalas, parámetros, tempo, canal) en la EEPROM del Arduino. Al encender, Pepas recupera automáticamente lo último guardado. El primer guardado congela la secuencia ~1-2 segundos mientras escribe; los siguientes son casi instantáneos.
+- "CTRL"+"SHIFT"+"BORRAR" (cargar): recupera en cualquier momento el último estado guardado en la EEPROM (lo mismo que se carga al encender).
+- El teclado se puede desenchufar y volver a enchufar en caliente: mientras está desconectado todo sigue sonando igual (no se resetea nada), y al reconectarlo se retoma el control como si nada. Los LEDs del canal se re-sincronizan solos.
 
 ## Fallas y cuestiones a mejorar
-- Creo que lo más urgente para optimizar es la comunicación con el teclado. Quizas probar otra librería.
-- Algunos teclados no funcionan, no pude identificar por qué. Quizás algun tema de protocolos. También podría solucionarse utilizando otra librería.
-- Ocasionalmente se cuelga. Quizás un problema de falta de memoria?
-- Ocasionalmente no cierra la escala y agrega todas las notas que se activan, a veces se soluciona presionando "TAB" 2 veces (forzando a cerrar la escala, reiniciándola).
+- Algunos teclados no funcionan, no pude identificar por qué. Quizás algun tema de protocolos.
 - El tempo no es preciso como un reloj, se desvía un poco (sospecho que la temperatura ambiente tiene que ver) aunque no es notorio luego de unos minutos de sincronizado. Se vuelve notorio luego de los 20-30 minutos aproximadamente, pero es improbable que se quiera mantener una precisión fuerte luego de tanto tiempo.
-- Una buena incorporación sería una entrada de clock, para delegar el manejo del tiempo a otros sistemas más idóneos y precisos.
 - Quizás estaría bien agregar un modo de arpegio regular, no aleatorio, en el cual se podrían elegir arpegios ascendentes, descendentes, ping-pong, y algún otro.
-- Quizás alguna forma de guardar información más permanentemente, accesible luego de reiniciar el Arduino o de haber cambiado mucho las cosas. Aunque no sé si hecha a perder un poco el sentido de Pepas.
+- El guardado automático al apagar requiere una modificación de hardware (detector de brownout + capacitor reservorio) para dar tiempo a escribir la EEPROM; por eso de momento el guardado es manual (Ctrl+Shift+Enter).
 - Entradas/salidas MIDI/OSC?
+
+### Ya resuelto
+- La comunicación con el teclado se reescribió (driver PS/2 propio con validación de paridad y stop bit) y ahora tolera glitches y desconexión/reconexión en caliente.
+- El colgado ocasional: se agregaron guardas de límites y un combo de pánico (Ctrl+Alt+Supr) para recuperarse sin apagar.
+- La escala que "no cerraba" y seguía agregando notas: se corrigió con un conteo de notas derivado del estado real del teclado.
+- Guardar el estado de forma permanente: ahora se puede (Ctrl+Shift+Enter, recuperado al encender).
+- Entrada de clock externo: implementada (sincroniza el tempo con un clock externo).
 
 # Pepas
 ###### English version
 Pepas is a CV, gate and trigger generative sequencer module based on Arduino for modular synthesizers. It is designed to be cheap and accessible. It's heart is an Arduino UNO and it relies on a PS/2 computer keyboard to interact with it. The rest are basic electronics components, such as capacitors, resistors and such. 
-It is designed to be a musical experimentation tool, based on a controlled chaos. Sequences produced by Pepas are unique and unrepeatable, and are not saved in any memory. What it is repeatable are the parameters that control the chaos. So it's not made for the musical composer that knows exactly which notes and when does he or she want them, but for the musician that wants to experiment nimbly with certain musical schemes. The system lacks screens and complicated menues, all is allways to the reach of the user. The only indicators are the LEDs that has the keyboard (one to indicate that a note is being executed in the selected channel and the other 2 to indicate what channel is selected in a binary format from 0 to 3, or in other words from the first to the fourth).
+It is designed to be a musical experimentation tool, based on a controlled chaos. Sequences produced by Pepas are unique and unrepeatable. By default they are not saved, they live in the moment; but optionally the current state can be stored in the Arduino's memory (Ctrl+Shift+Enter) and restored on power-up. What is always repeatable are the parameters that control the chaos. So it's not made for the musical composer that knows exactly which notes and when does he or she want them, but for the musician that wants to experiment nimbly with certain musical schemes. The system lacks screens and complicated menues, all is allways to the reach of the user. As indicators, the 2 rightmost keyboard LEDs show the current channel in a binary format from 0 to 3 (first to fourth channel). The note-on feedback (which used to blink on a keyboard LED) now comes out of a dedicated Arduino pin (A1), where an external LED can be wired; the third keyboard LED is now free.
 
 For a more didactic introduction, see the next video:
 https://www.youtube.com/watch?v=Qqi9xfu0wNE
@@ -155,25 +163,33 @@ Most important parameters are:
 - Holding "CTRL" the user can:
   - enter the amount of steps in a fixed sequence, from 1 to 64, using the numpad
   - set the tempo using the potentiometer
-  - store a preset (also pressing "F5","F6","F7" or "F8")
 - Holding "ALT" the user can:
   - enter the amount of notes in the scale, from 1 to 16, using the numpad
   - set the notes execution probability through the use of the potentiometer, from 0% to 100%
 - "SHIFT" propagates all to the other channels
 - "UP ARROW" and "DOWN ARROW" changes the octave of the scale (only for CV channels)
-- "ESC" tap tempo (not working currently)
+- "ESC" restarts the sequence head of every channel (back to the first step)
 - "F1" sets the mutation probability parameter (for fixed secuences) through the use of the potentiometer (hold "F1" > work the potentiometer > release "F1")
 - "F2" sets the tempo in BPM using the numpad (hold "F2" > enter BPM > release "F2")
-- "F5" to "F8" activate stored presets (only scale is stored, maybe in a future more paremeters gets implemented in the presets), this allows for chords progressions (actually, progressions of chord-based arpeggios).
-- " * " and " / " (from the numpad) multiplies or divides (respectively) the relative speed of the sequence steps by an integer number entered through the numpad (hold " * " or " / " > enter a number > release " * " or " / "). By default it's 1, if you multiply it by 2, for instance, 2 notes are executed in the same time that 1 was being executed.
+- " * " and " / " (from the numpad) multiplies or divides (respectively) the relative speed of the sequence steps by an integer number entered through the numpad (hold " * " or " / " > enter a number > release " * " or " / "). By default it's 1, if you multiply it by 2, for instance, 2 notes are executed in the same time that 1 was being executed. The multiplier is capped at 32.
+
+### Recovery, reset and saving
+- "CTRL"+"ALT"+"DEL" (soft reset / panic): silences any notes or gates left stuck and releases the modifiers, without touching sequences, tempo or parameters. The quick way out if something hangs (e.g. a note that won't turn off).
+- "CTRL"+"SHIFT"+"ESC" (factory reset): brings everything back to power-on defaults.
+- "CTRL"+"SHIFT"+"ENTER" (save): stores the current state (sequences, scales, parameters, tempo, channel) in the Arduino's EEPROM. On power-up, Pepas automatically restores the last saved state. The first save freezes the sequence for ~1-2 seconds while writing; later saves are nearly instant.
+- "CTRL"+"SHIFT"+"BACKSPACE" (load): restores the last saved state from EEPROM at any time (the same one loaded on power-up).
+- The keyboard can be hot-unplugged and re-plugged: while disconnected everything keeps playing exactly as it was (nothing resets), and on reconnect you resume control as if nothing happened. The channel LEDs re-sync by themselves.
 
 ## Issues to improve
-- Most urgent issue is to optimize keyboard communication. Maybe try another library.
-- Some keyboards don't work, couldn't identify why. Maybe some protocol issue. Also might be solved using another library.
-- Occasionally it hangs. Maybe lack of enough memory?
-- Occasioanlly scales are not closed and keeps adding notes, sometimes it finally closes the scale when pressing "TAB" 2 times (hence forcing to close the scale, reseting it)
+- Some keyboards don't work, couldn't identify why. Maybe some protocol issue.
 - Tempo is not clock precise, it deviates a little (I suspect that ambient temperature has something to do) although is not so notorious after a few minutes from synchronization. It gets notorious after something like 20-30 minutes, but it is not so likely that someone wants that strong precision after that much time.
-- A good incorporation would be a clock input, to delegate time handling to other more suitable and precise systems.
 - Maybe it would be nice to add a regular arpegio mode, nor tandom, in wich the user could pick from acsending , descending, ping-pong, and other tipes of arpeggios.
-- Maybe a way to store information more permanently, accesible after rebooting the Arduino or after having changed things a lot. Although I'm not sure if this spoils the point of Pepas.
+- Automatic save on power-off would need a hardware change (a brown-out detector + reservoir capacitor) to give the EEPROM time to finish writing; that's why saving is manual for now (Ctrl+Shift+Enter).
 - MIDI/OSC inputs/outputs?
+
+### Already solved
+- Keyboard communication was rewritten (own PS/2 driver with parity and stop-bit validation) and now tolerates bus glitches and hot unplug/replug.
+- The occasional hang: bounds guards were added, plus a panic combo (Ctrl+Alt+Del) to recover without powering off.
+- The scale that "wouldn't close" and kept adding notes: fixed with a note count derived from the real keyboard state.
+- Storing state permanently: now possible (Ctrl+Shift+Enter, restored on power-up).
+- External clock input: implemented (syncs the tempo to an external clock).

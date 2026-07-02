@@ -63,11 +63,14 @@ void setup()
   releaseClock();
   inhibiting = false;
   
-  while (ps2Available()) 
+  while (ps2Available())
   {
     uint8_t Byte = ps2Read();
   }
-  
+
+  cargarEstado();          // recuperar el patch guardado (si hay uno valido) antes de arrancar
+  actualizarLEDSelector(); // reflejar el canal (0 o el cargado) en los LEDs del teclado
+
   //Serial.begin(115200);
   //Serial.print("capacidad: ");
   //Serial.println(capacidad);

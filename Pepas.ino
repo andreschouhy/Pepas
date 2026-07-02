@@ -10,6 +10,7 @@
 
 #include "Arduino.h"
 #include "ps2.h"
+#include <EEPROM.h>  // persistencia de estado (guardar/cargar patch). Ver d_estado.ino
 
 const int8_t extClockPin = 0;
 const int8_t extClockSwitchPin = 1;
@@ -47,6 +48,8 @@ unsigned int tempo = 0;
 #define SC_KP_DIV   0x4A  // dividir velocidad (con E0)
 #define SC_UP       0x75  // subir octava (con E0)
 #define SC_DOWN     0x72  // bajar octava (con E0)
+#define SC_ENTER    0x5A  // enter (ctrl+shift+enter: guardar estado en EEPROM)
+#define SC_DEL      0x71  // supr/delete extendida (ctrl+alt+supr: soft reset). Con E0; sin E0 es el "." del pad
 
 // Mapa de scancode PS/2 -> nota MIDI. Vive en flash (PROGMEM) para no gastar RAM.
 const uint8_t mapa[34][2] PROGMEM = {
@@ -88,7 +91,7 @@ const uint8_t mapa[34][2] PROGMEM = {
 
 uint8_t K2Midi(uint8_t val)
 {
-  for(uint8_t i = 0; i < 34; i++) if(val == pgm_read_byte(&mapa[i][0])) return pgm_read_byte(&mapa[i][1]);
+  for(uint8_t i = 0; i < sizeof(mapa)/sizeof(mapa[0]); i++) if(val == pgm_read_byte(&mapa[i][0])) return pgm_read_byte(&mapa[i][1]);
   return 0;
 }
 
@@ -108,7 +111,7 @@ const uint8_t mapaNum[10][2] PROGMEM = {
 
 int8_t K2Num(uint8_t val)
 {
-  for(uint8_t i = 0; i < 10; i++) if(val == pgm_read_byte(&mapaNum[i][0])) return pgm_read_byte(&mapaNum[i][1]);
+  for(uint8_t i = 0; i < sizeof(mapaNum)/sizeof(mapaNum[0]); i++) if(val == pgm_read_byte(&mapaNum[i][0])) return pgm_read_byte(&mapaNum[i][1]);
   return -1;
 }
 

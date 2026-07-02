@@ -42,4 +42,7 @@ void enviar(uint8_t valor);
 // Devuelve false si no hay un evento completo disponible.
 bool ps2NextKey(TeclaEvento &ev);
 
+// True (una sola vez) si el teclado mando su BAT (0xAA): replug/brownout/reset.
+bool ps2HuboReset();
+
 #endif

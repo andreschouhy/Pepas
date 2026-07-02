@@ -10,6 +10,24 @@ void recontarNotas()
   notasPresionadas = n;
 }
 
+// Refleja el canal seleccionado en los LEDs del teclado (los 2 de la derecha, en binario 0..3).
+// El LED de la izquierda queda libre. Usa enviar() (bloqueante) pero solo ante eventos raros
+// (TAB, replug del teclado, factory reset), fuera del path de timing -> costo despreciable.
+void actualizarLEDSelector()
+{
+  attachInterrupt(CLOCK_PIN_INT, ps2int_write, FALLING);
+  enviar(0xED);
+  uint8_t m = 0;
+  if (selector == 1) bitWrite(m, 0, 1);
+  else if (selector == 2) bitWrite(m, 2, 1);
+  else if (selector == 3) { bitWrite(m, 0, 1); bitWrite(m, 2, 1); }
+  enviar(m);
+  estadosLED = m;
+  attachInterrupt(CLOCK_PIN_INT, ps2int_read, FALLING);
+  releaseClock();
+  inhibiting = false;
+}
+
 void manejarPresionar(TeclaEvento &ev)
 {
   uint8_t sc = ev.scancode;
@@ -45,9 +63,16 @@ void manejarPresionar(TeclaEvento &ev)
     else
       pepas[selector]->secuenciarSwitch();
   }
-  else if (sc == SC_BKSP) // resetear secuencia
+  else if (sc == SC_BKSP) // resetear secuencia (Ctrl+Shift: cargar el estado guardado)
   {
-    if (shift == 1)
+    if (buscar(SC_LCTRL) != -1 && shift == 1)
+    {
+      cargarEstado(); // Ctrl+Shift+Backspace: recuperar el ultimo patch guardado en EEPROM
+      // Ctrl sigue fisicamente apretado -> controlarVelocidad==1 y el loop reescribiria
+      // velocidadGeneral desde el pote; re-anclar el snapshot para que el tempo cargado no se pise.
+      poteSnapshotGral = velocidadGeneral - ((long)pote * precision);
+    }
+    else if (shift == 1)
       for (uint8_t i = 0; i < cantPepas; i++)
         pepas[i]->resetearSecuencia();
     else
@@ -114,14 +139,19 @@ void manejarPresionar(TeclaEvento &ev)
       }
     }
   }
-  else if (sc == SC_ESC) // reiniciar cabezal en todas las pepas
+  else if (sc == SC_ESC)
   {
-    if (shift == 0)
-    {
+    if (buscar(SC_LCTRL) != -1 && shift == 1)
+      factoryReset(); // Ctrl+Shift+Esc: reset de fabrica (todo a valores de encendido)
+    else if (shift == 0)
       for (uint8_t i = 0; i < cantPepas; i++)
-        pepas[i]->reiniciarCabezal();
-    }
-    // shift+ESC: tap tempo en desarrollo, desconectado por ahora (ver insertarTap en Pepas.ino)
+        pepas[i]->reiniciarCabezal(); // Esc: reiniciar cabezal en todas las pepas
+    // Shift+Esc (sin Ctrl): tap tempo en desarrollo, desconectado (ver insertarTap en Pepas.ino)
+  }
+  else if (sc == SC_ENTER)
+  {
+    if (buscar(SC_LCTRL) != -1 && shift == 1)
+      guardarEstado(); // Ctrl+Shift+Enter: guardar el estado actual en EEPROM
   }
   else if (sc == SC_LSHIFT)
   {
@@ -148,20 +178,7 @@ void manejarPresionar(TeclaEvento &ev)
   {
     selector++;
     if (selector > cantPepas - 1) selector = 0;
-
-    // indicar selector en los LEDs en binario (solo se usan los 2 de la derecha,
-    // el de la izquierda queda libre como indicador de trigger)
-    attachInterrupt(CLOCK_PIN_INT, ps2int_write, FALLING);
-    enviar(0xED);
-    uint8_t selectorModificado = 0;
-    if (selector == 0) { enviar(selectorModificado); }
-    if (selector == 1) { bitWrite(selectorModificado, 0, 1); enviar(selectorModificado); }
-    if (selector == 2) { bitWrite(selectorModificado, 2, 1); enviar(selectorModificado); }
-    if (selector == 3) { bitWrite(selectorModificado, 0, 1); bitWrite(selectorModificado, 2, 1); enviar(selectorModificado); }
-    estadosLED = selectorModificado;
-    attachInterrupt(CLOCK_PIN_INT, ps2int_read, FALLING);
-    releaseClock();
-    inhibiting = false;
+    actualizarLEDSelector();
   }
   else if (K2Num(sc) > -1) // teclado numerico
   {
@@ -201,6 +218,11 @@ void manejarPresionar(TeclaEvento &ev)
   if (sc == SC_DOWN && ev.extendida) // flecha abajo: bajar octava
   {
     pepas[selector]->bajarOctava();
+  }
+  if (sc == SC_DEL && ev.extendida)  // Supr: soft reset / panico con Ctrl+Alt (mimetiza Ctrl+Alt+Del)
+  {
+    if (buscar(SC_LCTRL) != -1 && buscar(SC_LALT) != -1)
+      softReset();
   }
 }
 
@@ -313,4 +335,9 @@ void eventoTeclado()
     if (ev.soltando) manejarSoltar(ev);
     else manejarPresionar(ev);
   }
+
+  // Si el teclado se reinicio (replug/brownout), re-sincronizar sus LEDs al canal actual.
+  // NO se toca el estado del secuenciador: la musica sigue exactamente como estaba.
+  if (ps2HuboReset())
+    actualizarLEDSelector();
 }

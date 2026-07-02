@@ -13,6 +13,10 @@ static volatile uint8_t buffer[PS2_BUFFER_SIZE];
 static volatile uint8_t head, tail;
 volatile bool inhibiting;   // compartida con la app (extern en ps2.h)
 
+// Se marca cuando el teclado manda su BAT (0xAA) al energizarse: replug / brownout / reset.
+// La app la consume via ps2HuboReset() para re-sincronizar los LEDs, sin tocar la secuencia.
+static bool tecladoReset = false;
+
 // ----- Utilidades open-collector -----
 static inline void holdClock() {
   digitalWrite(ClockPin, LOW); // pullup off
@@ -36,7 +40,7 @@ void releaseData() {
 
 // ----- ISR de lectura -----
 void ps2int_read() {
-  static uint8_t bitcount=0, incoming=0;
+  static uint8_t bitcount=0, incoming=0, parityCalc=0;
   static uint32_t prev_ms=0;
   uint32_t now_ms;
   uint8_t n, val;
@@ -49,11 +53,23 @@ void ps2int_read() {
   if (now_ms - prev_ms > 250) {
     bitcount = 0;
     incoming = 0;
+    parityCalc = 0;
   }
   prev_ms = now_ms;
   n = bitcount - 1;
-  if (n <= 7) {
+  if (n <= 7) {              // bitcount 1..8 -> bits de datos (LSB primero)
     incoming |= (val << n);
+    parityCalc ^= val;       // acumular paridad de los 8 bits de datos
+  } else if (bitcount == 9) {  // bit de paridad (impar): datos^paridad debe dar 1
+    if ((parityCalc ^ val) != 1) {  // paridad mala -> frame corrupto (glitch de bus / hotplug), descartar
+      bitcount = incoming = parityCalc = 0;
+      return;
+    }
+  } else if (bitcount == 10) {  // stop bit debe ser 1
+    if (val != 1) {               // framing malo -> descartar
+      bitcount = incoming = parityCalc = 0;
+      return;
+    }
   }
   bitcount++;
   if (bitcount == 11) {
@@ -65,6 +81,7 @@ void ps2int_read() {
     }
     bitcount = 0;
     incoming = 0;
+    parityCalc = 0;
   }
 }
 
@@ -145,8 +162,11 @@ bool ps2NextKey(TeclaEvento &ev) {
   while (ps2Available()) {
     uint8_t b = ps2Read();
     switch (b) {
-      case PS2_ACK:
       case PS2_BAT_OK:
+        tecladoReset = true; // el teclado se energizo/reinicio (replug/brownout)
+        ext = brk = false;
+        continue;
+      case PS2_ACK:
       case PS2_PAUSE_PREFIX:
       case PS2_ERROR:
         ext = brk = false; // codigos de estado: descartar y resetear prefijos
@@ -166,4 +186,11 @@ bool ps2NextKey(TeclaEvento &ev) {
     }
   }
   return false;
+}
+
+// Devuelve true una sola vez si el teclado mando su BAT (0xAA) desde la ultima consulta.
+bool ps2HuboReset() {
+  bool r = tecladoReset;
+  tecladoReset = false;
+  return r;
 }
