@@ -31,6 +31,7 @@ class Pepa
       numero = 0;
       poteSnapshot = 0;
       multiplicador = multiplicadorTemporal = 1;
+      arpModo = 0; arpNota = 0; arpDir = 1;
       resetearEscala();
       digitalWrite(puertoG, LOW);
       analogWrite(puertoCV2, 0);
@@ -51,6 +52,8 @@ class Pepa
     long multiplicador, velocidad, timingCap;
     int probabilidad, mutacion, clockCount;
     uint8_t numero;
+    uint8_t arpModo, arpNota; // arpegio: modo (0=aleatorio, 1=up, 2=down, 3=pingpong) y ultima nota tocada
+    int8_t  arpDir;           // pingpong: sentido actual del recorrido (+1 sube, -1 baja)
 
     // Accesor publico de triggerLoop() (que es private): loop() lo llama en cada iteracion
     // para cerrar el pulso de trigger cuando expira su duracion. La logica vive en triggerLoop
@@ -140,13 +143,16 @@ class Pepa
       {
         disparar = 0;
         
-        if (secuenciar == 0) // secuencia aleatoria
+        if (secuenciar == 0) // secuencia aleatoria o arpegio (segun arpModo)
         {
+          // Elegir/avanzar la nota SIEMPRE, aunque la probabilidad la silencie: asi bajar la
+          // probabilidad hace un arpegio con huecos en vez de solo estirarlo. En aleatorio da igual.
+          uint8_t notaOut = proximaNota();
+
           if (random(1024) <= probabilidad)
           {
             if (modoSqrEnv == 0)
             {
-              uint8_t notaOut = escala[random(0, escalaSize)]; 
               notaOut += (12*(octava-1));
               notaOut = min(notaOut, 81);
               analogWrite(puertoCV, map(notaOut, 21, 81, 0, 255));
@@ -155,9 +161,8 @@ class Pepa
               analogWrite(puertoCV2, random(255));
               digitalWrite(puertoG, HIGH);
             }
-            else if (modoSqrEnv == 1) 
+            else if (modoSqrEnv == 1)
             {
-              uint8_t notaOut = escala[random(0, escalaSize)]; 
               sqrEnvCycle = capacidad * (map(notaOut, 21, 49, 0, 100)/100.0);
               
               if (sqrEnvCycle > (capacidad * (map(21, 21, 49, 0, 100)/100.0))) // este condicional es para que no dispare con notaOut = 21, no deberia de todas formas
@@ -456,6 +461,12 @@ class Pepa
         octava = 1;
     }
 
+    // Arpegio: flecha der/izq cicla el modo (0=aleatorio, 1=up, 2=down, 3=pingpong). Al cambiar
+    // de modo se reinicia el sentido del pingpong; arpNota se deja como esta para que el recorrido
+    // continue desde la altura actual en vez de saltar de golpe al piso de la escala.
+    void arpSiguiente() { arpModo = (arpModo + 1) % 4; arpDir = 1; }
+    void arpAnterior()  { arpModo = (arpModo + 3) % 4; arpDir = 1; } // +3 == -1 mod 4
+
     // ---- Persistencia (EEPROM) ----
     // Serializan/deserializan la voz a partir de una direccion y devuelven la siguiente.
     // EEPROM.update solo escribe bytes que cambian (cuida el limite de ~100k escrituras).
@@ -469,6 +480,7 @@ class Pepa
       EEPROM.update(addr++, mantener);
       EEPROM.update(addr++, secuenciar);
       EEPROM.update(addr++, escalaSize);
+      EEPROM.update(addr++, arpModo);
       EEPROM.put(addr, probabilidad); addr += sizeof(probabilidad);
       EEPROM.put(addr, mutacion);     addr += sizeof(mutacion);
       for (uint8_t i = 0; i < 16; i++) EEPROM.update(addr++, escala[i]);
@@ -486,6 +498,7 @@ class Pepa
       mantener          = EEPROM.read(addr++);
       secuenciar        = EEPROM.read(addr++);
       escalaSize        = EEPROM.read(addr++);
+      arpModo           = EEPROM.read(addr++);
       EEPROM.get(addr, probabilidad); addr += sizeof(probabilidad);
       EEPROM.get(addr, mutacion);     addr += sizeof(mutacion);
       for (uint8_t i = 0; i < 16; i++) escala[i] = EEPROM.read(addr++);
@@ -499,6 +512,8 @@ class Pepa
       if (multiplicadorTemporal < 1 || multiplicadorTemporal > 32) multiplicadorTemporal = 1;
       multiplicador = multiplicadorTemporal;
       if (escalaSize > 16) escalaSize = 16;
+      if (arpModo > 3) arpModo = 0;      // EEPROM viejo/corrupto: volver a aleatorio
+      arpNota = 0; arpDir = 1;           // estado runtime del arpegio, no se persiste
       if (probabilidad < 1 || probabilidad > 1024) probabilidad = 1024;
       if (mutacion < 0 || mutacion > 1024) mutacion = 0;
       return addr;
@@ -538,6 +553,65 @@ class Pepa
     {
       for(int8_t i = 0; i < escalaSize; i++) if(escala[i] == _nota) return i;
       return -1;
+    }
+
+    // ---- Arpegio: seleccion de la proxima nota ----
+    // proximaNota() devuelve el valor de escala a tocar segun arpModo y AVANZA el estado del
+    // arpegio. arpModo 0 (aleatorio) devuelve una nota al azar, sin estado. Los arpegios recorren
+    // la escala por altura (pitch) escaneando la proxima nota mas aguda/grave respecto de arpNota;
+    // asi no hace falta ordenar escala[] (romperia la secuencia fija y el EEPROM) ni RAM extra, y
+    // el recorrido se adapta solo si se agregan/quitan notas en vivo.
+    uint8_t proximaNota()
+    {
+      if (arpModo == 0) return escala[random(0, escalaSize)];
+      if (escalaSize <= 1) { arpNota = escala[0]; return arpNota; } // una nota: no hay arpegio
+
+      if (arpModo == 1)                              // up
+        arpNota = notaArriba(arpNota);
+      else if (arpModo == 2)                         // down
+        arpNota = notaAbajo(arpNota);
+      else                                           // pingpong (arpModo == 3)
+      {
+        if (arpDir > 0)
+        {
+          uint8_t sig = notaArriba(arpNota);
+          if (sig <= arpNota) { arpDir = -1; sig = notaAbajo(arpNota); } // rebota en el tope
+          arpNota = sig;
+        }
+        else
+        {
+          uint8_t sig = notaAbajo(arpNota);
+          if (sig >= arpNota) { arpDir = 1; sig = notaArriba(arpNota); } // rebota en el piso
+          arpNota = sig;
+        }
+      }
+      return arpNota;
+    }
+
+    // Nota mas grave de escala estrictamente mayor que v; si no hay (v es la mas aguda), envuelve a
+    // la mas grave. notaAbajo es el espejo. Escaneo O(escalaSize), sin ordenar escala[]. Notas
+    // repetidas colapsan a un solo paso; con una sola altura distinta el arpegio queda quieto ahi.
+    uint8_t notaArriba(uint8_t v)
+    {
+      uint8_t menor = 255, prox = 255; bool hay = false;
+      for (uint8_t i = 0; i < escalaSize; i++)
+      {
+        uint8_t n = escala[i];
+        if (n < menor) menor = n;
+        if (n > v && n < prox) { prox = n; hay = true; }
+      }
+      return hay ? prox : menor;
+    }
+    uint8_t notaAbajo(uint8_t v)
+    {
+      uint8_t mayor = 0, prev = 0; bool hay = false;
+      for (uint8_t i = 0; i < escalaSize; i++)
+      {
+        uint8_t n = escala[i];
+        if (n > mayor) mayor = n;
+        if (n < v && n > prev) { prev = n; hay = true; }
+      }
+      return hay ? prev : mayor;
     }
 };
 

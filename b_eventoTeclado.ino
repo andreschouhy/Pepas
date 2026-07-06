@@ -170,7 +170,8 @@ void manejarPresionar(TeclaEvento &ev)
     if (selector > cantPepas - 1) selector = 0;
     actualizarLEDSelector();
   }
-  else if (K2Num(sc) > -1) // teclado numerico
+  else if (K2Num(sc) > -1 && !ev.extendida) // teclado numerico (los digitos del pad NO son extendidos;
+                                            // asi las flechas E0 6B/74/75/72 no inyectan numeros)
   {
     if (pepas[selector]->control > 0)
     {
@@ -200,6 +201,14 @@ void manejarPresionar(TeclaEvento &ev)
   if (sc == SC_DOWN && ev.extendida) // flecha abajo: bajar octava (broadcast con shift)
   {
     BROADCAST(bajarOctava());
+  }
+  if (sc == SC_LEFT && ev.extendida)  // flecha izquierda: modo de arpegio anterior (broadcast con shift)
+  {
+    BROADCAST(arpAnterior());
+  }
+  if (sc == SC_RIGHT && ev.extendida) // flecha derecha: modo de arpegio siguiente (broadcast con shift)
+  {
+    BROADCAST(arpSiguiente());
   }
   if (sc == SC_DEL && ev.extendida)  // Supr: soft reset / panico con Ctrl+Alt (mimetiza Ctrl+Alt+Del)
   {

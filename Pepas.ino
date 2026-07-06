@@ -56,6 +56,8 @@ unsigned int tempo = 0;
 #define SC_KP_DIV   0x4A  // dividir velocidad (con E0)
 #define SC_UP       0x75  // subir octava (con E0)
 #define SC_DOWN     0x72  // bajar octava (con E0)
+#define SC_LEFT     0x6B  // arpegio anterior (con E0; sin E0 es el 4 del teclado numerico)
+#define SC_RIGHT    0x74  // arpegio siguiente (con E0; sin E0 es el 6 del teclado numerico)
 #define SC_ENTER    0x5A  // enter (ctrl+shift+enter: guardar estado en EEPROM)
 #define SC_DEL      0x71  // supr/delete extendida (ctrl+alt+supr: soft reset). Con E0; sin E0 es el "." del pad
 

@@ -9,7 +9,7 @@
 // Magic al inicio del EEPROM: distingue "hay un patch guardado" de un EEPROM en blanco (0xFF).
 // Subir el segundo byte si cambia el layout de guardado, para invalidar patches viejos.
 #define EEPROM_MAGIC0 0x50  // 'P'
-#define EEPROM_MAGIC1 0x33  // version de layout
+#define EEPROM_MAGIC1 0x34  // version de layout (0x34: +arpModo por voz)
 
 static void limpiarTeclasFisicas()
 {

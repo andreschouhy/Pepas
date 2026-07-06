@@ -70,6 +70,7 @@ Los parámetros más importantes son:
   - configurar la probabilidad de ejecución de notas mediante el uso del potenciómetro, desde 0% hasta 100%
 - "SHIFT" propaga todo lo que se hace en un canal a los demás canales
 - "FLECHA ARRIBA" y "FLECHA ABAJO" cambia la octava de escala (sólo para los canales de CV)
+- "FLECHA IZQUIERDA" y "FLECHA DERECHA" cambian el modo de arpegio, ciclando: aleatorio (por defecto) → ascendente → descendente → ping-pong. En los modos de arpegio las notas de la escala se recorren por altura (pitch) en vez de al azar; la probabilidad de ejecución sigue aplicando, así que bajarla produce arpegios con huecos. Con "SHIFT" se propaga a todos los canales.
 - "ESC" reinicia el cabezal de las secuencias de todos los canales (vuelve al primer paso) y a la vez funciona como "tap tempo": un toque aislado sólo reinicia, pero tocando al compás varias veces seguidas se fija el tempo (promedio de los últimos 4 toques, para poder ir moviendo el tempo en vivo). Si pasa demasiado tiempo entre toques, el siguiente arranca una serie nueva, así un reinicio suelto no altera el tempo. (Con "CTRL" apretado no cuenta como tap, porque ahí el tempo lo maneja el potenciómetro.)
 - "F1" configura el parámetro de mutación (para las secuencias fijas) mediante el uso del potenciómetro (presionar "F1" > mover potenciómetro > soltar "F1")
 - "F2" configura el tempo en BPM usando el teclado numerico (presionar "F2" > entrar BPM > soltar "F2")
@@ -85,7 +86,6 @@ Los parámetros más importantes son:
 ## Fallas y cuestiones a mejorar
 - Algunos teclados no funcionan, no pude identificar por qué. Quizás algun tema de protocolos.
 - El tempo no es preciso como un reloj, se desvía un poco (sospecho que la temperatura ambiente tiene que ver) aunque no es notorio luego de unos minutos de sincronizado. Se vuelve notorio luego de los 20-30 minutos aproximadamente, pero es improbable que se quiera mantener una precisión fuerte luego de tanto tiempo.
-- Quizás estaría bien agregar un modo de arpegio regular, no aleatorio, en el cual se podrían elegir arpegios ascendentes, descendentes, ping-pong, y algún otro.
 - El guardado automático al apagar requiere una modificación de hardware (detector de brownout + capacitor reservorio) para dar tiempo a escribir la EEPROM; por eso de momento el guardado es manual (Ctrl+Shift+Enter).
 - Entradas/salidas MIDI/OSC?
 
@@ -95,6 +95,7 @@ Los parámetros más importantes son:
 - La escala que "no cerraba" y seguía agregando notas: se corrigió con un conteo de notas derivado del estado real del teclado.
 - Guardar el estado de forma permanente: ahora se puede (Ctrl+Shift+Enter, recuperado al encender).
 - Entrada de clock externo: implementada (sincroniza el tempo con un clock externo).
+- Modo de arpegio: implementado (flechas izquierda/derecha ciclan entre aleatorio, ascendente, descendente y ping-pong).
 
 # Pepas
 ###### English version
@@ -168,6 +169,7 @@ Most important parameters are:
   - set the notes execution probability through the use of the potentiometer, from 0% to 100%
 - "SHIFT" propagates all to the other channels
 - "UP ARROW" and "DOWN ARROW" changes the octave of the scale (only for CV channels)
+- "LEFT ARROW" and "RIGHT ARROW" cycle the arpeggio mode: random (default) → up → down → ping-pong. In the arpeggio modes the scale notes are walked by pitch instead of randomly; the note probability still applies, so lowering it produces arpeggios with gaps. With "SHIFT" it propagates to all channels.
 - "ESC" restarts the sequence head of every channel (back to the first step) and doubles as "tap tempo": a single press only restarts, but tapping to the beat several times in a row sets the tempo (average of the last 4 taps, so you can nudge the tempo live). If too long passes between taps, the next one starts a fresh series, so an isolated restart doesn't change the tempo. (Holding "CTRL" it doesn't count as a tap, since there the tempo is handled by the potentiometer.)
 - "F1" sets the mutation probability parameter (for fixed secuences) through the use of the potentiometer (hold "F1" > work the potentiometer > release "F1")
 - "F2" sets the tempo in BPM using the numpad (hold "F2" > enter BPM > release "F2")
@@ -183,7 +185,6 @@ Most important parameters are:
 ## Issues to improve
 - Some keyboards don't work, couldn't identify why. Maybe some protocol issue.
 - Tempo is not clock precise, it deviates a little (I suspect that ambient temperature has something to do) although is not so notorious after a few minutes from synchronization. It gets notorious after something like 20-30 minutes, but it is not so likely that someone wants that strong precision after that much time.
-- Maybe it would be nice to add a regular arpegio mode, nor tandom, in wich the user could pick from acsending , descending, ping-pong, and other tipes of arpeggios.
 - Automatic save on power-off would need a hardware change (a brown-out detector + reservoir capacitor) to give the EEPROM time to finish writing; that's why saving is manual for now (Ctrl+Shift+Enter).
 - MIDI/OSC inputs/outputs?
 
@@ -193,3 +194,4 @@ Most important parameters are:
 - The scale that "wouldn't close" and kept adding notes: fixed with a note count derived from the real keyboard state.
 - Storing state permanently: now possible (Ctrl+Shift+Enter, restored on power-up).
 - External clock input: implemented (syncs the tempo to an external clock).
+- Arpeggio mode: implemented (left/right arrows cycle through random, up, down and ping-pong).

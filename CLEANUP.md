@@ -102,3 +102,15 @@ Hecho 2026-07-02 (segunda pasada de robustez):
 ## 6. Bug conocido: octava + shift  (`b_eventoTeclado.ino`)  (HECHO 2026-07-02)
 Con `shift`, `subirOctava`/`bajarOctava` (flechas) ahora se propagan a todas las voces (via
 `BROADCAST`), consistente con el resto de los controles. Antes solo afectaban `pepas[selector]`.
+
+## 8. Feature: modo arpegio  (HECHO 2026-07-06, FALTA PROBAR EN DISPOSITIVO)
+Las flechas izquierda/derecha ciclan `arpModo` por voz (0=aleatorio, 1=up, 2=down, 3=pingpong),
+broadcast con shift. Reemplaza la seleccion aleatoria en la rama `secuenciar==0` de `actualizar()`
+por `proximaNota()`, que recorre la escala por altura escaneando la proxima nota mas aguda/grave
+(`notaArriba`/`notaAbajo`, O(escalaSize), sin ordenar `escala[]` para no romper la secuencia fija
+ni el EEPROM). La nota se avanza SIEMPRE aunque la probabilidad la silencie -> arpegios con huecos
+al bajar la probabilidad. Aplica a canales CV y square-env. `arpModo` se persiste en EEPROM (magic
+subido 0x33->0x34, invalida patches viejos una vez). Detalle clave: la rama del teclado numerico
+ahora exige `!ev.extendida`, si no las flechas (E0 6B/74) inyectaban digitos del pad al tener
+scancode compartido. Tunables/dudas para el dispositivo: sin feedback visual del modo (no hay LED
+libre), se cicla y se escucha.
