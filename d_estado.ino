@@ -74,6 +74,8 @@ void cargarEstado()
   if (selector >= cantPepas) selector = 0;
   for (uint8_t i = 0; i < cantPepas; i++) addr = pepas[i]->cargarEEPROM(addr);
 
-  // arrancar limpio el timing de cada voz con el patch ya cargado
-  for (uint8_t i = 0; i < cantPepas; i++) pepas[i]->reiniciarCabezal();
+  // NO reiniciar el timing: el timingCap de cada voz sigue libre para que un load en vivo
+  // (combo Ctrl+Shift+Backspace) continue en fase con lo que ya sonaba. Cargar es un gesto
+  // que se puede usar de forma creativa a mitad de sesion; re-fasear cortaria la secuencia.
+  actualizarLEDSelector(); // reflejar en los LEDs del teclado el canal que quedo cargado
 }

@@ -73,7 +73,8 @@ void setup()
   }
 
   cargarEstado();          // recuperar el patch guardado (si hay uno valido) antes de arrancar
-  actualizarLEDSelector(); // reflejar el canal (0 o el cargado) en los LEDs del teclado
+                           // (ya refleja el canal cargado en los LEDs del teclado)
+  actualizarLEDSelector(); // por si no habia patch guardado: reflejar el canal 0 de arranque
 
   // Watchdog: si el loop se cuelga y no se resetea el WDT en 4s, el micro se reinicia solo.
   // Se habilita ACA, despues del boot (~10s de animacion + delays): antes lo dispararia.

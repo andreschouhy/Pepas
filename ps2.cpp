@@ -178,6 +178,11 @@ bool ps2NextKey(TeclaEvento &ev) {
         brk = true;
         continue;
       default:
+        // "Fake shift": con un Shift fisico apretado, el teclado inserta E0 12 / E0 F0 12
+        // (o 0x59) alrededor de las teclas extendidas (flechas, Supr, etc.) por compat con
+        // el pad numerico. Descartarlos: si se dejaran pasar, el E0 F0 12 se lee como soltar
+        // Shift y rompe el broadcast de octava (Shift+flecha dejaba de propagar).
+        if (ext && (b == 0x12 || b == 0x59)) { ext = brk = false; continue; }
         ev.scancode = b;
         ev.extendida = ext;
         ev.soltando = brk;

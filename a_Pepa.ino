@@ -255,21 +255,10 @@ class Pepa
         escala[escalaSize - 1] = K2Midi(tecla);
 
         if (escalaSize == 1)
-        {
-          if (mantener == 1)
-          {
-            disparar = 0;
-            if (clockSwitch == false)
-              reiniciarCabezal();
-          }
-          else
-          {
-            if (clockSwitch == false)
-              reiniciarCabezal();
-            else
-              disparar = 0;
-          } 
-        }
+          disparar = 0; // NO reiniciar el timer: la nueva escala entra en fase con el timingCap
+                        // que ya corre y suena en el proximo wrap. Asi se mantiene el sync entre
+                        // canales (antes reiniciarCabezal() ponia timingCap=0 en cada escala nueva
+                        // y desincronizaba). disparar=0 evita un disparo inmediato fuera de grilla.
       }
     }
     

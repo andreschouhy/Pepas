@@ -5,8 +5,10 @@
 //     notas se desincronizaba y el gesto de "una nota resetea la escala en mantener" fallaba
 //   - conteo de notas derivado de presionadas[] (recontarNotas), no de un contador ++/--
 //   - soltar es simetrico/seguro: ya no corrompe presionadas[] con un break huerfano
-// Pendiente/conocido: con shift no se propagan los cambios de octava (subir/bajarOctava solo
-//   actuan sobre pepas[selector]). Presets sacados por sospecha de saturar memoria.
+// Shift+flecha propaga la octava a todas las voces (BROADCAST). Requiere descartar el
+//   "fake shift" (E0 12 / E0 F0 12) que el teclado mete antes de las teclas extendidas; si no,
+//   se leia como soltar Shift y el broadcast no ocurria (ver ps2NextKey). Presets sacados por
+//   sospecha de saturar memoria.
 
 #include "Arduino.h"
 #include "ps2.h"
