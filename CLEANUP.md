@@ -31,9 +31,9 @@ se reemplazo por el macro `BROADCAST(call)` (definido arriba de `manejarPresiona
 teclado numerico sigue manual: su argumento referencia el miembro `numero`, que el macro no puede
 calificar. El bloque selector->LED del TAB ya se habia extraido a `actualizarLEDSelector()`.
 
-## 3. Nombrar los scancodes  (`b_eventoTeclado.ino`)
-Los scancodes son numeros magicos (`0x14`, `0x11`, `0x05`, `0x29`, `0x58`...). Los comentarios al
-lado ayudan pero `#define SC_LCTRL 0x14` etc. harian el dispatcher autoexplicativo.
+## 3. Nombrar los scancodes  (`b_eventoTeclado.ino`)  (HECHO)
+Los scancodes eran numeros magicos (`0x14`, `0x11`, `0x05`, `0x29`, `0x58`...). Ahora hay `#define
+SC_*` en `Pepas.ino` y el dispatcher los usa; queda autoexplicativo.
 
 ## 4. Largos de array por `sizeof`  (`Pepas.ino`)  (HECHO 2026-07-02)
 `K2Midi` y `K2Num` ahora iteran con `sizeof(mapa)/sizeof(mapa[0])` y
@@ -41,14 +41,16 @@ lado ayudan pero `#define SC_LCTRL 0x14` etc. harian el dispatcher autoexplicati
 agregan/quitan filas.
 
 ## 5. Varios menores
-- Declaraciones multi-variable enganosas: la linea `int8_t cantPresionadas, ..., F0Byte = 0;` ya se
-  limpio (se quitaron `pausa`/`E0Key`/`F0Byte`, y `cantPresionadas`/`notasPresionadas` se inicializan).
-  Queda la linea `boolean clockCheck, clockSwitch, controlarVelocidad, setTempo = 0;` (`Pepas.ino`):
-  solo inicializa `setTempo`. Inofensivo (globales arrancan en 0) pero conviene separar/inicializar.
-- `Pepa::triggerLoopCheck()` es un wrapper de paso directo a `triggerLoop()` privado; documentar por
-  que existe o exponer `triggerLoop`.
-- `insertarTap()` (HECHO 2026-06-30): desconectada de Shift+ESC. Sigue definida en `Pepas.ino` sin
-  usar. Decidir si terminarla (tap tempo) o borrarla.
+- Declaraciones multi-variable enganosas (HECHO 2026-07-06): la linea `int8_t cantPresionadas, ...,
+  F0Byte = 0;` ya se habia limpiado. Ahora tambien la linea `boolean clockCheck, ...` y la linea
+  `long prevMillis, ...` (`Pepas.ino`) inicializan cada variable explicitamente (antes solo la ultima).
+  Inofensivo (globales arrancan en 0) pero ya no es un trip-wire para futuros edits.
+- `Pepa::triggerLoopCheck()` (HECHO 2026-07-06): documentado. Es el accesor publico de `triggerLoop()`
+  (private), que loop() llama cada iteracion para cerrar el pulso de trigger al expirar su duracion.
+- `insertarTap()` (HECHO 2026-07-06): tap tempo TERMINADO y reconectado a Shift+Esc. Se corrigieron
+  dos bugs del stub: `dif` arrancaba sin inicializar (acumulaba sobre basura) y un `* 10` espurio
+  dejaba el tempo 10x lento. El modelo ahora coincide con el path de BPM: `velGen = capacidad/periodo_ms`,
+  con guarda de division por cero y clamp a [1, 1024]*precision. FALTA PROBAR EN DISPOSITIVO.
 
 ## 7. Robustez (foco 2026-07-02)
 

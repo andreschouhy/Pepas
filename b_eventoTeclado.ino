@@ -126,10 +126,11 @@ void manejarPresionar(TeclaEvento &ev)
   {
     if (buscar(SC_LCTRL) != -1 && shift == 1)
       factoryReset(); // Ctrl+Shift+Esc: reset de fabrica (todo a valores de encendido)
-    else if (shift == 0)
+    else if (shift == 1)
+      insertarTap();  // Shift+Esc (sin Ctrl): tap tempo (cada tap fija el pulso, ver Pepas.ino)
+    else
       for (uint8_t i = 0; i < cantPepas; i++)
         pepas[i]->reiniciarCabezal(); // Esc: reiniciar cabezal en todas las pepas
-    // Shift+Esc (sin Ctrl): tap tempo en desarrollo, desconectado (ver insertarTap en Pepas.ino)
   }
   else if (sc == SC_ENTER)
   {

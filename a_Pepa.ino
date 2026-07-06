@@ -52,6 +52,10 @@ class Pepa
     int probabilidad, mutacion, clockCount;
     uint8_t numero;
 
+    // Accesor publico de triggerLoop() (que es private): loop() lo llama en cada iteracion
+    // para cerrar el pulso de trigger cuando expira su duracion. La logica vive en triggerLoop
+    // (private) porque tambien se dispara internamente al lanzar una nota; este wrapper solo
+    // la expone al exterior sin abrir toda la implementacion.
     void triggerLoopCheck()
     {
       triggerLoop();

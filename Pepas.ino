@@ -27,8 +27,8 @@ uint8_t selector = 0;
 uint8_t shift = 0;
 uint8_t estadosLED = 0;
 long pote = 0;
-long prevMillis, currentMillis, clockMillisPrev, clockMillisPrevPrev, clockDifCurrent, clockDifPrev, deltaMillis = 0;
-boolean clockCheck, clockSwitch, controlarVelocidad, setTempo = 0;
+long prevMillis = 0, currentMillis = 0, clockMillisPrev = 0, clockMillisPrevPrev = 0, clockDifCurrent = 0, clockDifPrev = 0, deltaMillis = 0;
+boolean clockCheck = 0, clockSwitch = 0, controlarVelocidad = 0, setTempo = 0;
 long velocidadGeneral = 512L * precision;
 long poteSnapshotGral;
 const unsigned int cantTaps = 16;
@@ -45,7 +45,7 @@ unsigned int tempo = 0;
 #define SC_SPACE    0x29  // secuenciar
 #define SC_BKSP     0x66  // resetear secuencia
 #define SC_TAB      0x0D  // cambiar selector
-#define SC_ESC      0x76  // reiniciar cabezal (shift+ESC: tap tempo, desconectado)
+#define SC_ESC      0x76  // reiniciar cabezal (Shift+ESC: tap tempo; Ctrl+Shift+ESC: factory reset)
 #define SC_BACKTICK 0x0E  // sincronizar
 #define SC_KP_MULT  0x7C  // multiplicar velocidad
 #define SC_KP_DIV   0x4A  // dividir velocidad (con E0)
@@ -194,14 +194,18 @@ void notaLedLoop()
   }
 }
 
-void insertarTap() // esta funcion esta en desarrollo, aun no esta funcional
+// Tap tempo (Shift+Esc): cada tap registra currentMillis; el promedio de los intervalos entre
+// taps es el periodo del pulso en ms y fija el tempo global. El buffer tap[] se limpia al soltar
+// Shift (ver manejarSoltar), asi cada gesto de tapeo arranca limpio. El typematic repeat no
+// dispara taps fantasma: manejarPresionar ignora makes de teclas ya presionadas.
+void insertarTap()
 {
   for(uint8_t i = cantTaps-1; i > 0; i--) tap[i] = tap[i-1];
   tap[0] = currentMillis;
-  
-  unsigned long dif, prom = 0;
+
+  unsigned long dif = 0, prom = 0; // dif arrancaba sin inicializar: acumulaba sobre basura
   uint8_t cant = 0;
-  for(uint8_t i = 0; i < cantTaps-1; i++) 
+  for(uint8_t i = 0; i < cantTaps-1; i++)
   {
     if(tap[i] != 0 && tap[i+1] != 0)
     {
@@ -209,11 +213,18 @@ void insertarTap() // esta funcion esta en desarrollo, aun no esta funcional
       cant++;
     }
   }
-  if (cant > 0) 
+  if (cant > 0)
   {
-    prom = dif / cant;
-    prom *= 10; // no tengo idea por que tengo que multiplicarlo por 10 (?????)
-    velocidadGeneral = capacidad / prom; 
+    prom = dif / cant; // intervalo promedio entre taps = periodo del pulso, en ms
+    if (prom > 0)      // evitar division por cero si dos taps caen en el mismo ms
+    {
+      // Mismo modelo que el path de BPM (F2): velGen = capacidad / periodo_ms.
+      // (BPM hace capacidad * BPM/60000 = capacidad / (60000/BPM) = capacidad / periodo_ms.)
+      // El "* 10" que habia antes dejaba el tempo 10x lento; era espurio.
+      velocidadGeneral = capacidad / prom;
+      if (velocidadGeneral > 1024L * precision) velocidadGeneral = 1024L * precision;
+      else if (velocidadGeneral < 1L * precision) velocidadGeneral = 1L * precision;
+    }
   }
 }
 
