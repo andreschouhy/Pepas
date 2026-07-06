@@ -31,8 +31,13 @@ long prevMillis = 0, currentMillis = 0, clockMillisPrev = 0, clockMillisPrevPrev
 boolean clockCheck = 0, clockSwitch = 0, controlarVelocidad = 0, setTempo = 0;
 long velocidadGeneral = 512L * precision;
 long poteSnapshotGral;
-const unsigned int cantTaps = 16;
+const unsigned int cantTaps = 4;   // ventana del tap tempo: se promedian solo los ultimos 4 taps
+                                   // (3 intervalos), asi se puede mover el tempo tocando en vivo
+                                   // sin que taps viejos arrastren el promedio. Menos RAM que 16.
 unsigned long tap[cantTaps];
+const unsigned long TAP_TIMEOUT = 2000; // ms: si pasa mas que esto desde el ultimo tap, el proximo
+                                        // Esc arranca una serie nueva. Asi un reinicio de cabezal
+                                        // suelto (Esc aislado) no se encadena y no altera el tempo.
 unsigned int tempo = 0;
 
 // Scancodes PS/2 (set 2) usados por el dispatcher. Antes eran numeros magicos.
@@ -45,7 +50,7 @@ unsigned int tempo = 0;
 #define SC_SPACE    0x29  // secuenciar
 #define SC_BKSP     0x66  // resetear secuencia
 #define SC_TAB      0x0D  // cambiar selector
-#define SC_ESC      0x76  // reiniciar cabezal (Shift+ESC: tap tempo; Ctrl+Shift+ESC: factory reset)
+#define SC_ESC      0x76  // reiniciar cabezal + tap tempo (Ctrl+Shift+ESC: factory reset)
 #define SC_BACKTICK 0x0E  // sincronizar
 #define SC_KP_MULT  0x7C  // multiplicar velocidad
 #define SC_KP_DIV   0x4A  // dividir velocidad (con E0)
@@ -194,12 +199,18 @@ void notaLedLoop()
   }
 }
 
-// Tap tempo (Shift+Esc): cada tap registra currentMillis; el promedio de los intervalos entre
-// taps es el periodo del pulso en ms y fija el tempo global. El buffer tap[] se limpia al soltar
-// Shift (ver manejarSoltar), asi cada gesto de tapeo arranca limpio. El typematic repeat no
-// dispara taps fantasma: manejarPresionar ignora makes de teclas ya presionadas.
+// Tap tempo (va montado sobre Esc, ver manejarPresionar): cada tap registra currentMillis; el
+// promedio de los intervalos entre los ultimos cantTaps taps es el periodo del pulso en ms y fija
+// el tempo global. Como cantTaps=4, solo pesan los ultimos 4 taps -> el tempo se puede mover
+// tocando en vivo. El typematic repeat no dispara taps fantasma: manejarPresionar ignora makes de
+// teclas ya presionadas, asi que cada tap es una pulsacion fisica distinta.
 void insertarTap()
 {
+  // Si paso demasiado desde el ultimo tap, arrancar serie nueva: un Esc aislado (reinicio de
+  // cabezal) no debe encadenarse con el anterior como si fuera un tap lentisimo y pisar el tempo.
+  if (tap[0] != 0 && ((unsigned long)currentMillis - tap[0]) > TAP_TIMEOUT)
+    for (uint8_t i = 0; i < cantTaps; i++) tap[i] = 0;
+
   for(uint8_t i = cantTaps-1; i > 0; i--) tap[i] = tap[i-1];
   tap[0] = currentMillis;
 

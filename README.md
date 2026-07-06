@@ -70,8 +70,7 @@ Los parámetros más importantes son:
   - configurar la probabilidad de ejecución de notas mediante el uso del potenciómetro, desde 0% hasta 100%
 - "SHIFT" propaga todo lo que se hace en un canal a los demás canales
 - "FLECHA ARRIBA" y "FLECHA ABAJO" cambia la octava de escala (sólo para los canales de CV)
-- "ESC" reinicia el cabezal de las secuencias de todos los canales (vuelve al primer paso)
-- "SHIFT"+"ESC" (tap tempo): fija el tempo tocando al compás; cada toque marca el pulso y el tempo se ajusta al promedio de los intervalos (a partir del segundo toque). Al soltar "SHIFT" se reinicia el conteo de toques.
+- "ESC" reinicia el cabezal de las secuencias de todos los canales (vuelve al primer paso) y a la vez funciona como "tap tempo": un toque aislado sólo reinicia, pero tocando al compás varias veces seguidas se fija el tempo (promedio de los últimos 4 toques, para poder ir moviendo el tempo en vivo). Si pasa demasiado tiempo entre toques, el siguiente arranca una serie nueva, así un reinicio suelto no altera el tempo. (Con "CTRL" apretado no cuenta como tap, porque ahí el tempo lo maneja el potenciómetro.)
 - "F1" configura el parámetro de mutación (para las secuencias fijas) mediante el uso del potenciómetro (presionar "F1" > mover potenciómetro > soltar "F1")
 - "F2" configura el tempo en BPM usando el teclado numerico (presionar "F2" > entrar BPM > soltar "F2")
 - " * " y " / " (del teclado numérico) multiplica y divide (respectivamente) la velocidad relativa de los pasos de la secuencia por un número entero ingresado mediante el teclado numérico (presionar " * " o " / " > entrar un número > soltar " * " o " / "). Por defecto en 1, si se multiplica por 2, por ejemplo, se disparan 2 notas en el mismo tiempo que antes se disparaba una. El multiplicador se limita a 32.
@@ -169,8 +168,7 @@ Most important parameters are:
   - set the notes execution probability through the use of the potentiometer, from 0% to 100%
 - "SHIFT" propagates all to the other channels
 - "UP ARROW" and "DOWN ARROW" changes the octave of the scale (only for CV channels)
-- "ESC" restarts the sequence head of every channel (back to the first step)
-- "SHIFT"+"ESC" (tap tempo): sets the tempo by tapping to the beat; each tap marks the pulse and the tempo locks to the average interval (from the second tap on). Releasing "SHIFT" resets the tap count.
+- "ESC" restarts the sequence head of every channel (back to the first step) and doubles as "tap tempo": a single press only restarts, but tapping to the beat several times in a row sets the tempo (average of the last 4 taps, so you can nudge the tempo live). If too long passes between taps, the next one starts a fresh series, so an isolated restart doesn't change the tempo. (Holding "CTRL" it doesn't count as a tap, since there the tempo is handled by the potentiometer.)
 - "F1" sets the mutation probability parameter (for fixed secuences) through the use of the potentiometer (hold "F1" > work the potentiometer > release "F1")
 - "F2" sets the tempo in BPM using the numpad (hold "F2" > enter BPM > release "F2")
 - " * " and " / " (from the numpad) multiplies or divides (respectively) the relative speed of the sequence steps by an integer number entered through the numpad (hold " * " or " / " > enter a number > release " * " or " / "). By default it's 1, if you multiply it by 2, for instance, 2 notes are executed in the same time that 1 was being executed. The multiplier is capped at 32.

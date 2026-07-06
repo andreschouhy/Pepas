@@ -47,10 +47,14 @@ agregan/quitan filas.
   Inofensivo (globales arrancan en 0) pero ya no es un trip-wire para futuros edits.
 - `Pepa::triggerLoopCheck()` (HECHO 2026-07-06): documentado. Es el accesor publico de `triggerLoop()`
   (private), que loop() llama cada iteracion para cerrar el pulso de trigger al expirar su duracion.
-- `insertarTap()` (HECHO 2026-07-06): tap tempo TERMINADO y reconectado a Shift+Esc. Se corrigieron
-  dos bugs del stub: `dif` arrancaba sin inicializar (acumulaba sobre basura) y un `* 10` espurio
-  dejaba el tempo 10x lento. El modelo ahora coincide con el path de BPM: `velGen = capacidad/periodo_ms`,
-  con guarda de division por cero y clamp a [1, 1024]*precision. FALTA PROBAR EN DISPOSITIVO.
+- `insertarTap()` (HECHO 2026-07-06): tap tempo TERMINADO, montado sobre Esc (Esc reinicia cabezal
+  Y tapea; un toque suelto solo reinicia). Se corrigieron dos bugs del stub: `dif` sin inicializar
+  (acumulaba basura) y un `* 10` espurio (tempo 10x lento). Modelo alineado con el path de BPM:
+  `velGen = capacidad/periodo_ms`, con guarda de division por cero y clamp a [1, 1024]*precision.
+  `cantTaps` bajado de 16 a 4: solo se promedian los ultimos 4 taps (mover tempo en vivo) y se
+  ahorra RAM. `TAP_TIMEOUT` (2s): si pasa mucho entre taps, el proximo Esc arranca serie nueva, asi
+  un reinicio aislado no pisa el tempo. Con Ctrl apretado no se tapea (el pote maneja el tempo).
+  FALTA PROBAR EN DISPOSITIVO.
 
 ## 7. Robustez (foco 2026-07-02)
 

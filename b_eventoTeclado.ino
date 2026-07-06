@@ -126,11 +126,17 @@ void manejarPresionar(TeclaEvento &ev)
   {
     if (buscar(SC_LCTRL) != -1 && shift == 1)
       factoryReset(); // Ctrl+Shift+Esc: reset de fabrica (todo a valores de encendido)
-    else if (shift == 1)
-      insertarTap();  // Shift+Esc (sin Ctrl): tap tempo (cada tap fija el pulso, ver Pepas.ino)
     else
+    {
+      // Esc: reinicia el cabezal de todas las voces Y registra un tap de tempo. Un toque aislado
+      // solo reinicia (el tap necesita >=2 dentro de la ventana de tiempo, ver TAP_TIMEOUT);
+      // tocar al compas ademas fija/mueve el tempo. Con Ctrl apretado NO se tapea: ahi el tempo
+      // lo maneja el pote (controlarVelocidad==1) y pisaria el tap al instante.
+      if (buscar(SC_LCTRL) == -1)
+        insertarTap();
       for (uint8_t i = 0; i < cantPepas; i++)
-        pepas[i]->reiniciarCabezal(); // Esc: reiniciar cabezal en todas las pepas
+        pepas[i]->reiniciarCabezal();
+    }
   }
   else if (sc == SC_ENTER)
   {
@@ -272,7 +278,6 @@ void manejarSoltar(TeclaEvento &ev)
           for (uint8_t j = 0; j < cantPepas; j++)
             pepas[j]->quitar(presionadas[i]);
 
-    for (uint8_t i = 0; i < cantTaps; i++) tap[i] = 0;
     shift = 0;
   }
 }
