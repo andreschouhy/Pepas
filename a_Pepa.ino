@@ -345,6 +345,12 @@ class Pepa
       clockCount = 0;
       multiplicador = multiplicadorTemporal;
     }
+
+    // Reinicia solo el paso de secuencia, sin tocar el timer (timingCap). Se usa al
+    // sincronizar (`) para que todas las secuencias arranquen juntas manteniendo la fase.
+    void reiniciarPaso(){
+      cabezal = 0;
+    }
     
     void mutarSecuencia()
     {

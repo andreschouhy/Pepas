@@ -81,13 +81,6 @@ void setup()
   // Timeout holgado (4s) sobre el peor caso del loop, que es el guardado en EEPROM (~1-2s);
   // igual guardarEstado() hace wdt_reset() entre voces para no arriesgar.
   wdt_enable(WDTO_4S);
-
-  //Serial.begin(115200);
-  //Serial.print("capacidad: ");
-  //Serial.println(capacidad);
-  //Serial.println(pepas[0]->velocidad);
-
-  //prevMillis = millis() / multTemp;
 }
 
 void loop()

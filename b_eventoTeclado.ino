@@ -95,6 +95,11 @@ void manejarPresionar(TeclaEvento &ev)
   {
     for (uint8_t i = 0; i < cantPepas; i++)
     {
+      // Reiniciar el cabezal de todas las voces (incluida la actual) para que las
+      // secuencias arranquen juntas. Solo el paso de secuencia: NO se toca timingCap
+      // (la fase ya quedo sincronizada abajo, y resetearla desincronizaria los canales).
+      pepas[i]->reiniciarPaso();
+
       if (i != selector)
       {
         // Cuentas en 64 bits: aT (hasta ~capacidad) * multiplicadores (hasta 32*32) desborda

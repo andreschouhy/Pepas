@@ -61,7 +61,7 @@ Los parámetros más importantes son:
   - otro en el que se mantienen activas las notas que se presionaron desde que se presiona la primera nota hasta que ya no hay notas presionadas, luego de esto se reinicia el grupo de notas al presionar la primera de un nuevo grupo de notas.
 - "ESPACIO" alterna entre el modo de secuencias aleatorias y secuencias fijas
 - "BORRAR" resetea la secuencia (para el modo de secuencias fijas)
-- " ' " (el botón a la izquierda del "1") sincroniza el tiempo de todos los canales tomando como master el canal actual (es decir, sin alterarlo)
+- " ' " (el botón a la izquierda del "1") sincroniza la fase de todos los canales tomando como master el canal actual (su fase no se altera) y además reinicia el cabezal de todas las secuencias (incluida la del canal actual) para que arranquen todas juntas desde el primer paso
 - Manteniendo "CTRL" se puede:
   - ingresar la cantidad de pasos de la secuencia fija, desde 1 hasta 64, utilizando el teclado numérico
   - configurar el tempo mediante el uso del potenciómetro
@@ -160,7 +160,7 @@ Most important parameters are:
   - other in wich those notes are held active despites of being or not phisically pressed until the first note of a new group of notes is pressed.
 - "SPACEBAR" switches between the random sequences mode and the fixed sequences mode.
 - "BACKSPACE" resets the sequence (for the fixed sequences mode)
-- " ` " (the button to the left of the "1") synchronizes the time on every channels taking the current channel as the master (meaning that it is not altered)
+- " ` " (the button to the left of the "1") synchronizes the phase on every channel taking the current channel as the master (its phase is not altered) and also restarts every channel's sequence head (including the current one) so they all start together from the first step
 - Holding "CTRL" the user can:
   - enter the amount of steps in a fixed sequence, from 1 to 64, using the numpad
   - set the tempo using the potentiometer

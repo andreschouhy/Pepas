@@ -8,7 +8,7 @@ Ya hecho en esta pasada (no rehacer): borrado de codigo muerto (`state`, `fromHe
 `tamanoEscalaLimite`, `_pote`, `atualizarLED`, rama vacia `control==1`) y guardas de limites en
 `Pepa::agregar()` y `Pepa::quitar()` (esta ultima arregla el desborde de `escalaSize` al soltar notas).
 
-Hecho 2026-06-30 (FALTA PROBAR EN EL DISPOSITIVO):
+Hecho 2026-06-30 (PROBADO EN DISPOSITIVO, OK):
 - #1 Driver PS/2 extraido a `ps2.h`/`ps2.cpp` (incluye el decodificador `ps2NextKey`).
 - #3 Scancodes con nombre (`SC_*` en `Pepas.ino`), dispatcher reescrito con ellos.
 - Reescritura de `eventoTeclado` en `manejarPresionar`/`manejarSoltar` sobre eventos decodificados.
@@ -54,11 +54,11 @@ agregan/quitan filas.
   `cantTaps` bajado de 16 a 4: solo se promedian los ultimos 4 taps (mover tempo en vivo) y se
   ahorra RAM. `TAP_TIMEOUT` (2s): si pasa mucho entre taps, el proximo Esc arranca serie nueva, asi
   un reinicio aislado no pisa el tempo. Con Ctrl apretado no se tapea (el pote maneja el tempo).
-  FALTA PROBAR EN DISPOSITIVO.
+  PROBADO EN DISPOSITIVO, OK.
 
 ## 7. Robustez (foco 2026-07-02)
 
-Hecho 2026-07-02 (batch defensivo, sin cambio de comportamiento buscado, FALTA PROBAR EN DISPOSITIVO):
+Hecho 2026-07-02 (batch defensivo, sin cambio de comportamiento buscado, PROBADO EN DISPOSITIVO, OK):
 - `Pepa` inicializa `secuenciaCant` y `poteSnapshot` en el constructor. `new Pepa` no limpia la
   memoria; hoy funcionan solo porque la maquina de estados los escribe antes de leerlos, pero era
   un trip-wire para futuros edits.
@@ -67,7 +67,7 @@ Hecho 2026-07-02 (batch defensivo, sin cambio de comportamiento buscado, FALTA P
   la matematica de timing (y `24 / min(mult,12)` con mult negativo). El modo clock ya estaba
   guardado con `min(...)`; el free-run no.
 
-Hecho 2026-07-02 (Tier-1 + feature de persistencia, FALTA PROBAR EN DISPOSITIVO):
+Hecho 2026-07-02 (Tier-1 + feature de persistencia, PROBADO EN DISPOSITIVO, OK):
 - **Hardening de framing PS/2.** `ps2int_read` ahora valida paridad (impar) y stop bit; los frames
   corruptos (glitch de bus / transiente de hotplug) se descartan en vez de entrar como scancode
   fantasma. Antes se ignoraban ambos bits.
@@ -91,7 +91,7 @@ Hecho 2026-07-02 (segunda pasada de robustez):
 - **Watchdog timer** (`avr/wdt.h`). `wdt_enable(WDTO_4S)` al final de `setup()` (despues del boot de
   ~10s, si no lo dispararia), `wdt_reset()` al inicio de cada `loop()`. Si el loop se cuelga >4s, el
   micro se reinicia solo. `guardarEstado()` hace `wdt_reset()` entre voces para no dispararlo durante
-  el guardado en EEPROM (~1-2s). VERIFICAR EN DISPOSITIVO que el boot completa y que el guardado no
+  el guardado en EEPROM (~1-2s). PROBADO EN DISPOSITIVO, OK: el boot completa y el guardado no
   reinicia.
 - **Overflow en la sync (backtick).** `bT = aT * aM` (y `* bM`) podia desbordar el `long` de 32 bits
   con multiplicadores grandes. Ahora se hace en `long long` y se normaliza con `%= capacidad` en vez
@@ -103,7 +103,7 @@ Hecho 2026-07-02 (segunda pasada de robustez):
 Con `shift`, `subirOctava`/`bajarOctava` (flechas) ahora se propagan a todas las voces (via
 `BROADCAST`), consistente con el resto de los controles. Antes solo afectaban `pepas[selector]`.
 
-## 8. Feature: modo arpegio  (HECHO 2026-07-06, FALTA PROBAR EN DISPOSITIVO)
+## 8. Feature: modo arpegio  (HECHO 2026-07-06, PROBADO EN DISPOSITIVO, OK)
 Las flechas izquierda/derecha ciclan `arpModo` por voz (0=aleatorio, 1=up, 2=down, 3=pingpong),
 broadcast con shift. Reemplaza la seleccion aleatoria en la rama `secuenciar==0` de `actualizar()`
 por `proximaNota()`, que recorre la escala por altura escaneando la proxima nota mas aguda/grave
