@@ -114,3 +114,17 @@ subido 0x33->0x34, invalida patches viejos una vez). Detalle clave: la rama del 
 ahora exige `!ev.extendida`, si no las flechas (E0 6B/74) inyectaban digitos del pad al tener
 scancode compartido. Tunables/dudas para el dispositivo: sin feedback visual del modo (no hay LED
 libre), se cicla y se escucha.
+
+## 9. Unificacion del paso: se saca el toggle de secuenciar (spacebar)  (2026-07-08, A PROBAR)
+El paso ahora es una sola jerarquia en las flechas izq/der: random > up > down > pingpong (`arpModo`
+0..3). Se elimino la spacebar (`SC_SPACE`/`secuenciarSwitch`) y la variable `secuenciar`.
+- `arpModo==0` ("aleatorio") ahora corre el motor de secuencia (lo que antes era `secuenciar==1`):
+  la perilla de *cambio* (`mutacion`, F1) morfea de patron fijo (`mutacion=0`, default = "fixed
+  random") a totalmente aleatorio (`mutacion=max`). `probabilidad` (ALT) fija densidad de gates al
+  generar/mutar, no en vivo (a diferencia de los arpegios 1/2/3, que siguen gateando en vivo).
+- `arpModo` 1/2/3 (up/down/pingpong) sin cambios: `proximaNota()` recorre la escala por altura.
+- El patron se genera al arrancar (`resetearSecuencia()` en `reset()`), Backspace tira uno nuevo.
+- Sync (`) y reinicio de cabezal (Esc) ahora tambien reinician el recorrido del arpegio
+  (`arpNota=0; arpDir=1` en `reiniciarPaso`/`reiniciarCabezal`), asi los arpegios sincronizan igual
+  que las secuencias (antes solo se reiniciaba `cabezal`, que el arpegio no usa).
+- EEPROM: se saco el byte `secuenciar`; magic subido 0x34->0x35 (invalida patches viejos una vez).

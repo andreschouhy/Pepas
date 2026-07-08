@@ -18,7 +18,7 @@ class Pepa
     void reset()
     {
       futureMillisT = escalaSize = 0;
-      mantener = secuenciar = cabezal = timingCap = timingCapPrev = disparar = control = dividiendo = 0;
+      mantener = cabezal = timingCap = timingCapPrev = disparar = control = dividiendo = 0;
       secuenciaCantTemp = 8;
       secuenciaCant = secuenciaCantTemp;
       notasSec = 8;
@@ -33,6 +33,8 @@ class Pepa
       multiplicador = multiplicadorTemporal = 1;
       arpModo = 0; arpNota = 0; arpDir = 1;
       resetearEscala();
+      resetearSecuencia(); // arpModo 0 (aleatorio) corre sobre el motor de secuencia desde el
+                           // arranque: mutacion=0 -> patron fijo; subir mutacion -> totalmente aleatorio
       digitalWrite(puertoG, LOW);
       analogWrite(puertoCV2, 0);
     }
@@ -52,7 +54,8 @@ class Pepa
     long multiplicador, velocidad, timingCap;
     int probabilidad, mutacion, clockCount;
     uint8_t numero;
-    uint8_t arpModo, arpNota; // arpegio: modo (0=aleatorio, 1=up, 2=down, 3=pingpong) y ultima nota tocada
+    uint8_t arpModo, arpNota; // modo del paso (flechas izq/der): 0=aleatorio (motor de secuencia,
+                              // mutacion morfea fijo<->random), 1=up, 2=down, 3=pingpong. arpNota = ultima nota del arpegio
     int8_t  arpDir;           // pingpong: sentido actual del recorrido (+1 sube, -1 baja)
 
     // Accesor publico de triggerLoop() (que es private): loop() lo llama en cada iteracion
@@ -143,10 +146,10 @@ class Pepa
       {
         disparar = 0;
         
-        if (secuenciar == 0) // secuencia aleatoria o arpegio (segun arpModo)
+        if (arpModo != 0) // arpegio up/down/pingpong (arpModo 1/2/3)
         {
           // Elegir/avanzar la nota SIEMPRE, aunque la probabilidad la silencie: asi bajar la
-          // probabilidad hace un arpegio con huecos en vez de solo estirarlo. En aleatorio da igual.
+          // probabilidad hace un arpegio con huecos en vez de solo estirarlo.
           uint8_t notaOut = proximaNota();
 
           if (random(1024) <= probabilidad)
@@ -180,7 +183,8 @@ class Pepa
             digitalWrite(puertoG, LOW);
           }
         }
-        else // secuencia fija
+        else // arpModo 0 = "aleatorio": motor de secuencia. mutacion (F1) morfea de patron fijo
+             // (mutacion=0, default) a totalmente aleatorio (mutacion=max). Gate/nota/CV por paso.
         {
           if (pasoGate(cabezal) == 1)
           {
@@ -316,17 +320,6 @@ class Pepa
       }
     }
     
-    void secuenciarSwitch()
-    {
-      if (secuenciar == 0)
-      {
-        resetearSecuencia();
-        secuenciar = 1;
-      }
-      else 
-        secuenciar = 0;
-    }
-    
     void resetearSecuencia()
     {
       secuenciaCant = secuenciaCantTemp;
@@ -341,15 +334,17 @@ class Pepa
     void reiniciarCabezal(){
       timingCap = 0L;
       cabezal = 0;
+      arpNota = 0; arpDir = 1; // reiniciar tambien el recorrido del arpegio (arranca desde abajo)
       disparar = 1;
       clockCount = 0;
       multiplicador = multiplicadorTemporal;
     }
 
-    // Reinicia solo el paso de secuencia, sin tocar el timer (timingCap). Se usa al
-    // sincronizar (`) para que todas las secuencias arranquen juntas manteniendo la fase.
+    // Reinicia solo la posicion del paso (cabezal de secuencia + recorrido del arpegio), sin tocar
+    // el timer (timingCap). Se usa al sincronizar (`) para que todo arranque junto manteniendo la fase.
     void reiniciarPaso(){
       cabezal = 0;
+      arpNota = 0; arpDir = 1; // arpegios: reiniciar el recorrido para que sincronicen igual que la secuencia
     }
     
     void mutarSecuencia()
@@ -484,7 +479,6 @@ class Pepa
       EEPROM.update(addr++, (uint8_t)multiplicadorTemporal);
       EEPROM.update(addr++, dividiendo);
       EEPROM.update(addr++, mantener);
-      EEPROM.update(addr++, secuenciar);
       EEPROM.update(addr++, escalaSize);
       EEPROM.update(addr++, arpModo);
       EEPROM.put(addr, probabilidad); addr += sizeof(probabilidad);
@@ -502,7 +496,6 @@ class Pepa
       multiplicadorTemporal = (int8_t)EEPROM.read(addr++);
       dividiendo        = EEPROM.read(addr++);
       mantener          = EEPROM.read(addr++);
-      secuenciar        = EEPROM.read(addr++);
       escalaSize        = EEPROM.read(addr++);
       arpModo           = EEPROM.read(addr++);
       EEPROM.get(addr, probabilidad); addr += sizeof(probabilidad);
@@ -526,7 +519,7 @@ class Pepa
     }
 
     private:
-    uint8_t puertoT, puertoCV, puertoG, puertoCV2, secuenciar, cabezal, escala[16], secuenciaCant, secuenciaCantTemp, notasSec; // tratar de usar una variable para el tamaño de escala[]
+    uint8_t puertoT, puertoCV, puertoG, puertoCV2, cabezal, escala[16], secuenciaCant, secuenciaCantTemp, notasSec; // tratar de usar una variable para el tamaño de escala[]
 
     // Cada paso de la secuencia ocupa 2 bytes (antes eran 3) para ahorrar RAM:
     //   secuencia[paso][0] -> bit 7 = gate (1 = suena, 0 = silencio), bits 0-6 = indice de nota
@@ -563,10 +556,11 @@ class Pepa
 
     // ---- Arpegio: seleccion de la proxima nota ----
     // proximaNota() devuelve el valor de escala a tocar segun arpModo y AVANZA el estado del
-    // arpegio. arpModo 0 (aleatorio) devuelve una nota al azar, sin estado. Los arpegios recorren
-    // la escala por altura (pitch) escaneando la proxima nota mas aguda/grave respecto de arpNota;
-    // asi no hace falta ordenar escala[] (romperia la secuencia fija y el EEPROM) ni RAM extra, y
-    // el recorrido se adapta solo si se agregan/quitan notas en vivo.
+    // arpegio. Solo se llama con arpModo 1/2/3 (up/down/pingpong): arpModo 0 corre el motor de
+    // secuencia en actualizar(), no pasa por aca. Los arpegios recorren la escala por altura
+    // (pitch) escaneando la proxima nota mas aguda/grave respecto de arpNota; asi no hace falta
+    // ordenar escala[] (romperia la secuencia y el EEPROM) ni RAM extra, y el recorrido se adapta
+    // solo si se agregan/quitan notas en vivo. El caso arpModo 0 queda como guardia defensiva.
     uint8_t proximaNota()
     {
       if (arpModo == 0) return escala[random(0, escalaSize)];

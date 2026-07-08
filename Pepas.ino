@@ -47,7 +47,7 @@ unsigned int tempo = 0;
 #define SC_F1       0x05
 #define SC_F2       0x06
 #define SC_CAPS     0x58  // mantener
-#define SC_SPACE    0x29  // secuenciar
+#define SC_SPACE    0x29  // (libre: antes toggle de secuenciar, ahora el paso vive en arpModo via flechas)
 #define SC_BKSP     0x66  // resetear secuencia
 #define SC_TAB      0x0D  // cambiar selector
 #define SC_ESC      0x76  // reiniciar cabezal + tap tempo (Ctrl+Shift+ESC: factory reset)

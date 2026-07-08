@@ -56,10 +56,6 @@ void manejarPresionar(TeclaEvento &ev)
   {
     BROADCAST(mantenerSwitch());
   }
-  else if (sc == SC_SPACE) // secuenciar
-  {
-    BROADCAST(secuenciarSwitch());
-  }
   else if (sc == SC_BKSP) // resetear secuencia (Ctrl+Shift: cargar el estado guardado)
   {
     if (buscar(SC_LCTRL) != -1 && shift == 1)
