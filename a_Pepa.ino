@@ -31,7 +31,8 @@ class Pepa
       numero = 0;
       poteSnapshot = 0;
       multiplicador = multiplicadorTemporal = 1;
-      arpModo = 0; arpNota = 0; arpDir = 1;
+      arpModo = 0; arpNota = 0; arpDir = 1; arpPaso = 0;
+      limpiarArpegio();
       resetearEscala();
       resetearSecuencia(); // arpModo 0 (aleatorio) corre sobre el motor de secuencia desde el
                            // arranque: mutacion=0 -> patron fijo; subir mutacion -> totalmente aleatorio
@@ -57,6 +58,7 @@ class Pepa
     uint8_t arpModo, arpNota; // modo del paso (flechas izq/der): 0=aleatorio (motor de secuencia,
                               // mutacion morfea fijo<->random), 1=up, 2=down, 3=pingpong. arpNota = ultima nota del arpegio
     int8_t  arpDir;           // pingpong: sentido actual del recorrido (+1 sube, -1 baja)
+    uint8_t arpPaso;          // posicion dentro del ciclo del arpegio; indexa los overrides (arpOv)
 
     // Accesor publico de triggerLoop() (que es private): loop() lo llama en cada iteracion
     // para cerrar el pulso de trigger cuando expira su duracion. La logica vive en triggerLoop
@@ -148,9 +150,20 @@ class Pepa
         
         if (arpModo != 0) // arpegio up/down/pingpong (arpModo 1/2/3)
         {
-          // Elegir/avanzar la nota SIEMPRE, aunque la probabilidad la silencie: asi bajar la
+          // Avanzar el recorrido limpio SIEMPRE, aunque la probabilidad lo silencie: asi bajar la
           // probabilidad hace un arpegio con huecos en vez de solo estirarlo.
-          uint8_t notaOut = proximaNota();
+          uint8_t limpio = proximaNota();
+
+          // Mutacion del arpegio: sobre el recorrido limpio, aplica overrides fijos por paso. La
+          // mutacion (F1) va reescribiendo pasos al azar; el patron persiste y solo backspace lo
+          // limpia (mutacion=0 lo congela). Ver mutarArpegio / arpOv.
+          uint8_t periodo = arpPeriodo();
+          if (arpPaso >= periodo) arpPaso = 0; // el acorde pudo achicarse desde el ultimo paso
+          mutarArpegio(periodo);
+          int8_t ov = arpOv[arpPaso];
+          uint8_t notaOut = (ov >= 0) ? escala[ov % escalaSize] : limpio;
+          arpPaso++;
+          if (arpPaso >= periodo) arpPaso = 0;
 
           if (random(1024) <= probabilidad)
           {
@@ -329,12 +342,13 @@ class Pepa
         uint8_t gate = (random(1024) <= probabilidad) ? 1 : 0;
         escribirPaso(i, random(notasSec), gate, random(255));
       }
+      limpiarArpegio(); // backspace (resetearSecuencia) tambien vuelve el arpegio a limpio
     }
 
     void reiniciarCabezal(){
       timingCap = 0L;
       cabezal = 0;
-      arpNota = 0; arpDir = 1; // reiniciar tambien el recorrido del arpegio (arranca desde abajo)
+      arpNota = 0; arpDir = 1; arpPaso = 0; // reiniciar el recorrido del arpegio (arranca desde abajo); overrides intactos
       disparar = 1;
       clockCount = 0;
       multiplicador = multiplicadorTemporal;
@@ -344,7 +358,7 @@ class Pepa
     // el timer (timingCap). Se usa al sincronizar (`) para que todo arranque junto manteniendo la fase.
     void reiniciarPaso(){
       cabezal = 0;
-      arpNota = 0; arpDir = 1; // arpegios: reiniciar el recorrido para que sincronicen igual que la secuencia
+      arpNota = 0; arpDir = 1; arpPaso = 0; // arpegios: reiniciar el recorrido (sync); overrides intactos
     }
     
     void mutarSecuencia()
@@ -355,6 +369,34 @@ class Pepa
         uint8_t gate = (random(1024) <= probabilidad) ? 1 : 0;
         escribirPaso(mutado, random(notasSec), gate, random(255));
       }
+    }
+
+    // ---- Arpegio con mutacion (analogo a mutarSecuencia para el motor de secuencia) ----
+    // Periodo del ciclo del arpegio: up/down = escalaSize; pingpong = 2*escalaSize-2. Los overrides
+    // se indexan contra este periodo para que "el paso k" signifique lo mismo en cada vuelta.
+    uint8_t arpPeriodo()
+    {
+      if (escalaSize <= 1) return 1;
+      if (arpModo == 3) return (uint8_t)(2 * escalaSize - 2); // pingpong
+      return escalaSize;                                      // up/down
+    }
+
+    // Con prob. mutacion reescribe UN paso al azar del arpegio a una nota aleatoria de la escala
+    // (mismo dado que mutarSecuencia). El override queda fijo -> loop consistente; mutacion=0 no
+    // reescribe nada -> congela el patron acumulado. Guarda el indice de escala y se lee con
+    // %escalaSize, asi el patron se arrastra (remapea) al cambiar de acorde.
+    void mutarArpegio(uint8_t periodo)
+    {
+      if (escalaSize <= 1) return;
+      if (random(1024) < mutacion)
+        arpOv[random(periodo)] = random(escalaSize);
+    }
+
+    // Vuelve el arpegio a limpio (borra todos los overrides). Unico reset total del patron: backspace.
+    void limpiarArpegio()
+    {
+      for (uint8_t i = 0; i < 30; i++) arpOv[i] = -1;
+      arpPaso = 0;
     }
     
     void controlarCTRL(uint8_t estado)
@@ -513,6 +555,7 @@ class Pepa
       if (escalaSize > 16) escalaSize = 16;
       if (arpModo > 3) arpModo = 0;      // EEPROM viejo/corrupto: volver a aleatorio
       arpNota = 0; arpDir = 1;           // estado runtime del arpegio, no se persiste
+      limpiarArpegio();                  // los overrides de mutacion son runtime: arrancan limpios
       if (probabilidad < 1 || probabilidad > 1024) probabilidad = 1024;
       if (mutacion < 0 || mutacion > 1024) mutacion = 0;
       return addr;
@@ -525,6 +568,13 @@ class Pepa
     //   secuencia[paso][0] -> bit 7 = gate (1 = suena, 0 = silencio), bits 0-6 = indice de nota
     //   secuencia[paso][1] -> valor de CV aleatorio (0-255)
     uint8_t secuencia[64][2];
+
+    // Overrides de mutacion del arpegio: por cada paso del ciclo, -1 = nota limpia del recorrido,
+    // si no un indice de escala fijo. Analogo al buffer de secuencia: mutarArpegio() reescribe un
+    // paso al azar y el patron persiste (loop consistente); mutacion=0 lo congela y solo backspace
+    // lo limpia. Tamaño 30 = periodo maximo (pingpong con 16 notas = 2*16-2). Se lee con %escalaSize,
+    // asi el patron se remapea al cambiar de acorde ("carry over"). Estado runtime: no va a EEPROM.
+    int8_t arpOv[30];
 
     // Lectura/escritura de un paso (encapsulan el empaquetado de bits)
     uint8_t pasoNota(uint8_t paso) { return secuencia[paso][0] & 0x7F; }
