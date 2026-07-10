@@ -2,7 +2,7 @@
 ###### Versión español (scroll down for the english version)
 Pepas es un módulo secuenciador generativo de CV, gates y triggers basado en Arduino para sintetizadores modulares. 
 Está diseñado para ser económico y accesible. Su corazón es un Arduino UNO, y se opera a través de un teclado de computadora PS/2. El resto son componentes básicos de electrónica como resistencias, capacitores y demás.
-Está diseñado en vistas a ser una herramienta de experimentación musical, mediante el caos controlado. Las secuencias producidas por Pepas son únicas e irrepetibles, y no son guardadas en ninguna memoria. Lo que sí es reproducible son los parámetros que controlan el caos. Por ello no está pensado para el compositor musical que sabe exactamente qué notas quiere y en dónde. Sino mas bien para el músico que quiere experimentar ágilmente con ciertos esquemas musicales. El sistema carece de pantallas y menúes complicados, todo está siempre al alcance de los botones. Los unicos indicadores que hay son los LEDs que posee el teclado (uno para indicar que se esta ejecutando una nota en el canal actual y los 2 restantes para indicar el canal actual en formato binario del 0 al 3, o en otras palabras del primero al cuarto). 
+Está diseñado en vistas a ser una herramienta de experimentación musical, mediante el caos controlado. Las secuencias producidas por Pepas son únicas e irrepetibles. Por defecto no se guardan, viven en el momento; pero opcionalmente se puede guardar el estado actual en la memoria del Arduino (Ctrl+Shift+Enter) para recuperarlo al encender. Lo que sí es siempre reproducible son los parámetros que controlan el caos. Por ello no está pensado para el compositor musical que sabe exactamente qué notas quiere y en dónde. Sino mas bien para el músico que quiere experimentar ágilmente con ciertos esquemas musicales. El sistema carece de pantallas y menúes complicados, todo está siempre al alcance de los botones. Como indicadores se usan los 2 LEDs de la derecha del teclado, que muestran el canal actual en formato binario del 0 al 3 (del primero al cuarto canal). El feedback de nota-on (que antes parpadeaba en un LED del teclado) ahora sale por un pin dedicado del Arduino (A1), donde se puede conectar un LED externo; el tercer LED del teclado quedó libre.
 
 Para una introducción más didáctica, vea el siguiente video:
 https://www.youtube.com/watch?v=Qqi9xfu0wNE
@@ -40,14 +40,14 @@ Para la parte de electrónica seguir el link pasado con anterioridad.
 ## Modus operandi
 En los canales de CV, básicamente, uno activa un grupo de notas mediante el uso del teclado, a las que llamaremos "escala", y Pepas dispara aleatoriamente cualquiera de esas notas. La cantidad de notas de una escala puede ser desde 1 hasta 16 notas (podrían ser más si pudiera, sospecho que hay un problema con el límite de memoria del Arduino UNO). 
 De la misma forma, en los canales de square envelope, en lugar de notas se selecciona cuanto dura el ciclo digital entre 0 y 1, desde 0% (activando la "nota" más baja) hasta 100% (activando la "nota" más alta). Éstos canales pueden usarse como salida de clock para otros módulos, ya que son sincronizables en tempo con el resto de los canales. También pueden usarse para activar y desactivar ciertos módulos por medio de gates.
-Hay 2 modos de secuencias, uno de secuencia completamente aleatoria y otro de secuencias fijas (generadas aleatoriamente, bajo parámetros definidos por el usuario). Pepas posee también una funcionalidad para mutar levemente las secuencias fijas, para que no se repitan exactamente iguales por siempre. Su forma de operar es alterar un paso de la secuencia cada vez que la secuencia cumple un ciclo. Pepas decide si alterarlo o no mediante una probabilidad, que por defecto esta en 0% pero el usuario puede aumentar esa probabilidad a 100% operando el potenciómetro.
+El modo de paso se elige con las flechas izquierda/derecha, ciclando: aleatorio (por defecto), ascendente, descendente y ping-pong. En el modo *aleatorio* Pepas genera una secuencia al azar (bajo parámetros definidos por el usuario) que por defecto se repite fija ("fixed random"); al subir la probabilidad de cambio (mutación) con el potenciómetro, la secuencia se va regenerando paso a paso hasta volverse completamente aleatoria. De este modo un mismo control cubre todo el rango entre una secuencia fija y una totalmente aleatoria. En los modos de arpegio (ascendente/descendente/ping-pong) las notas de la escala se recorren por altura en lugar de al azar. La mutación también actúa en estos modos: al subirla va fijando al azar notas alteradas sobre el recorrido del arpegio, que quedan pegadas y se repiten en cada vuelta (en 0 el arpegio queda limpio y se congela el patrón acumulado; al máximo se vuelve completamente aleatorio). El patrón mutado persiste al cambiar de acorde y sólo se limpia con "BORRAR". (Antes existía una barra espaciadora que alternaba entre secuencia aleatoria y fija; ya no: todo vive en esta única jerarquía.)
 Los parámetros más importantes son: 
 - La escala (el grupo de notas activadas)
-- La cantidad de notas de una escala (para el modo de secuencias fijas)
-- La cantidad de pasos de una secuencia (para el modo de secuencias fijas)
+- La cantidad de notas de una escala (para el modo aleatorio / secuencia)
+- La cantidad de pasos de una secuencia (para el modo aleatorio / secuencia)
 - El tempo, configurable por BPM, por "tap tempo" o por potenciómetro. Es universal, todos los canales obedecen al mismo tempo, aunque las duraciones de notas de cada canal pueden ser distintas.
 - La probabilidad de ejecutar una nota, configurable mediante el potenciómetro
-- La probabilidad de alterar un paso de una secuencia (para el modo de secuencias fijas)
+- La probabilidad de cambio (mutación), configurable mediante el potenciómetro: en el modo aleatorio lleva la secuencia de fija a completamente aleatoria; en los modos de arpegio va fijando notas alteradas sobre el recorrido (mismo control, actúa en todos los modos)
 
 ## Mapa de botones
 - Notas musicales (para los canales de CV): 34 notas posibles se distribuyen a lo largo de las botones de letras y números de la siguiente manera:
@@ -59,39 +59,48 @@ Los parámetros más importantes son:
 - "BLOCK MAYUS" alterna entre 2 modos de accionar notas:
   - uno en el que se accionan las notas que están siendo presionas
   - otro en el que se mantienen activas las notas que se presionaron desde que se presiona la primera nota hasta que ya no hay notas presionadas, luego de esto se reinicia el grupo de notas al presionar la primera de un nuevo grupo de notas.
-- "ESPACIO" alterna entre el modo de secuencias aleatorias y secuencias fijas
-- "BORRAR" resetea la secuencia (para el modo de secuencias fijas)
-- " ' " (el botón a la izquierda del "1") sincroniza el tiempo de todos los canales tomando como master el canal actual (es decir, sin alterarlo)
+- "BORRAR" regenera la secuencia del modo aleatorio (tira un nuevo patrón al azar) y limpia las notas mutadas del arpegio (vuelve al recorrido sin alterar)
+- " ' " (el botón a la izquierda del "1") sincroniza la fase de todos los canales tomando como master el canal actual (su fase no se altera) y además reinicia el cabezal de todas las secuencias y el recorrido de los arpegios (incluido el canal actual) para que arranquen todos juntos desde el primer paso
 - Manteniendo "CTRL" se puede:
-  - ingresar la cantidad de pasos de la secuencia fija, desde 1 hasta 64, utilizando el teclado numérico
+  - ingresar la cantidad de pasos de la secuencia (modo aleatorio), desde 1 hasta 64, utilizando el teclado numérico
   - configurar el tempo mediante el uso del potenciómetro
-  - guardar un preset (presionar "CTRL" > presionar "F5","F6","F7" o "F8" > soltar "CTRL")
 - Manteniendo "ALT" se puede:
   - ingresar la cantidad de notas que tiene la escala, desde 1 hasta 16, utilizando el teclado numérico
   - configurar la probabilidad de ejecución de notas mediante el uso del potenciómetro, desde 0% hasta 100%
 - "SHIFT" propaga todo lo que se hace en un canal a los demás canales
 - "FLECHA ARRIBA" y "FLECHA ABAJO" cambia la octava de escala (sólo para los canales de CV)
-- "ESC" tap tempo (actualmente no está funcionando bien)
-- "F1" configura el parámetro de mutación (para las secuencias fijas) mediante el uso del potenciómetro (presionar "F1" > mover potenciómetro > soltar "F1")
+- "FLECHA IZQUIERDA" y "FLECHA DERECHA" eligen el modo de paso, ciclando: aleatorio (por defecto) → ascendente → descendente → ping-pong. En *aleatorio* Pepas toca una secuencia generada al azar: por defecto queda fija (se repite igual, "fixed random") y, subiendo la probabilidad de cambio (mutación, F1 + potenciómetro), se va regenerando hasta volverse completamente aleatoria. En los modos de arpegio (ascendente/descendente/ping-pong) las notas de la escala se recorren por altura (pitch) en vez de al azar; la probabilidad de ejecución sigue aplicando, así que bajarla produce arpegios con huecos. La mutación (F1) también actúa acá: va fijando al azar notas alteradas sobre el arpegio, que se repiten en cada vuelta y persisten al cambiar de acorde (sólo "BORRAR" las limpia). Con "SHIFT" se propaga a todos los canales.
+- "ESC" reinicia el cabezal de las secuencias y el recorrido de los arpegios de todos los canales (vuelve al primer paso) y a la vez funciona como "tap tempo": un toque aislado sólo reinicia, pero tocando al compás varias veces seguidas se fija el tempo (promedio de los últimos 4 toques, para poder ir moviendo el tempo en vivo). Si pasa demasiado tiempo entre toques, el siguiente arranca una serie nueva, así un reinicio suelto no altera el tempo. (Con "CTRL" apretado no cuenta como tap, porque ahí el tempo lo maneja el potenciómetro.)
+- "F1" configura la probabilidad de cambio (mutación) mediante el uso del potenciómetro; en el modo aleatorio lleva la secuencia de fija a completamente aleatoria, y en los modos de arpegio va fijando notas alteradas sobre el recorrido (en 0 se congela el patrón acumulado; sólo "BORRAR" lo limpia) (presionar "F1" > mover potenciómetro > soltar "F1")
 - "F2" configura el tempo en BPM usando el teclado numerico (presionar "F2" > entrar BPM > soltar "F2")
-- "F5" hasta "F8" activar presets (actualmente sólo de escala, quizás en el futuro se implementen otros parámetros para presetear), esto permite progresiones de acordes (o más bien, arpegios basados en acordes)
-- " * " y " / " (del teclado numérico) multiplica y divide (respectivamente) la velocidad relativa de los pasos de la secuencia por un número entero ingresado mediante el teclado numérico (presionar " * " o " / " > entrar un número > soltar " * " o " / "). Por defecto en 1, si se multiplica por 2, por ejemplo, se disparan 2 notas en el mismo tiempo que antes se disparaba una.
+- " * " y " / " (del teclado numérico) multiplica y divide (respectivamente) la velocidad relativa de los pasos de la secuencia por un número entero ingresado mediante el teclado numérico (presionar " * " o " / " > entrar un número > soltar " * " o " / "). Por defecto en 1, si se multiplica por 2, por ejemplo, se disparan 2 notas en el mismo tiempo que antes se disparaba una. El multiplicador se limita a 32.
+
+### Recuperación, reset y guardado
+- "CTRL"+"ALT"+"SUPR" (soft reset / pánico): silencia notas y gates que hayan quedado trabados y libera los modificadores, sin tocar las secuencias, el tempo ni los parámetros. Es la salida rápida si algo queda colgado (por ejemplo una nota que no se apaga).
+- "CTRL"+"SHIFT"+"ESC" (reset de fábrica): vuelve todo a los valores de encendido.
+- "CTRL"+"SHIFT"+"ENTER" (guardar): guarda el estado actual (secuencias, escalas, parámetros, tempo, canal) en la EEPROM del Arduino. Al encender, Pepas recupera automáticamente lo último guardado. El primer guardado congela la secuencia ~1-2 segundos mientras escribe; los siguientes son casi instantáneos.
+- "CTRL"+"SHIFT"+"BORRAR" (cargar): recupera en cualquier momento el último estado guardado en la EEPROM (lo mismo que se carga al encender).
+- El teclado se puede desenchufar y volver a enchufar en caliente: mientras está desconectado todo sigue sonando igual (no se resetea nada), y al reconectarlo se retoma el control como si nada. Los LEDs del canal se re-sincronizan solos.
 
 ## Fallas y cuestiones a mejorar
-- Creo que lo más urgente para optimizar es la comunicación con el teclado. Quizas probar otra librería.
-- Algunos teclados no funcionan, no pude identificar por qué. Quizás algun tema de protocolos. También podría solucionarse utilizando otra librería.
-- Ocasionalmente se cuelga. Quizás un problema de falta de memoria?
-- Ocasionalmente no cierra la escala y agrega todas las notas que se activan, a veces se soluciona presionando "TAB" 2 veces (forzando a cerrar la escala, reiniciándola).
+- Algunos teclados no funcionan, no pude identificar por qué. Quizás algun tema de protocolos.
 - El tempo no es preciso como un reloj, se desvía un poco (sospecho que la temperatura ambiente tiene que ver) aunque no es notorio luego de unos minutos de sincronizado. Se vuelve notorio luego de los 20-30 minutos aproximadamente, pero es improbable que se quiera mantener una precisión fuerte luego de tanto tiempo.
-- Una buena incorporación sería una entrada de clock, para delegar el manejo del tiempo a otros sistemas más idóneos y precisos.
-- Quizás estaría bien agregar un modo de arpegio regular, no aleatorio, en el cual se podrían elegir arpegios ascendentes, descendentes, ping-pong, y algún otro.
-- Quizás alguna forma de guardar información más permanentemente, accesible luego de reiniciar el Arduino o de haber cambiado mucho las cosas. Aunque no sé si hecha a perder un poco el sentido de Pepas.
+- El guardado automático al apagar requiere una modificación de hardware (detector de brownout + capacitor reservorio) para dar tiempo a escribir la EEPROM; por eso de momento el guardado es manual (Ctrl+Shift+Enter).
 - Entradas/salidas MIDI/OSC?
+
+### Ya resuelto
+- La comunicación con el teclado se reescribió (driver PS/2 propio con validación de paridad y stop bit) y ahora tolera glitches y desconexión/reconexión en caliente.
+- El colgado ocasional: se agregaron guardas de límites y un combo de pánico (Ctrl+Alt+Supr) para recuperarse sin apagar.
+- La escala que "no cerraba" y seguía agregando notas: se corrigió con un conteo de notas derivado del estado real del teclado.
+- Guardar el estado de forma permanente: ahora se puede (Ctrl+Shift+Enter, recuperado al encender).
+- Entrada de clock externo: implementada (sincroniza el tempo con un clock externo).
+- Modo de paso unificado: las flechas izquierda/derecha ciclan aleatorio → ascendente → descendente → ping-pong. Se sacó la barra espaciadora; el modo aleatorio ahora cubre de secuencia fija a completamente aleatoria con la perilla de mutación.
+- La mutación ahora actúa en todos los modos de paso: en aleatorio morfea de secuencia fija a aleatoria, y en los arpegios va fijando notas alteradas que se repiten en cada vuelta y persisten al cambiar de acorde (sólo "BORRAR" las limpia; la perilla en 0 congela el patrón acumulado).
 
 # Pepas
 ###### English version
 Pepas is a CV, gate and trigger generative sequencer module based on Arduino for modular synthesizers. It is designed to be cheap and accessible. It's heart is an Arduino UNO and it relies on a PS/2 computer keyboard to interact with it. The rest are basic electronics components, such as capacitors, resistors and such. 
-It is designed to be a musical experimentation tool, based on a controlled chaos. Sequences produced by Pepas are unique and unrepeatable, and are not saved in any memory. What it is repeatable are the parameters that control the chaos. So it's not made for the musical composer that knows exactly which notes and when does he or she want them, but for the musician that wants to experiment nimbly with certain musical schemes. The system lacks screens and complicated menues, all is allways to the reach of the user. The only indicators are the LEDs that has the keyboard (one to indicate that a note is being executed in the selected channel and the other 2 to indicate what channel is selected in a binary format from 0 to 3, or in other words from the first to the fourth).
+It is designed to be a musical experimentation tool, based on a controlled chaos. Sequences produced by Pepas are unique and unrepeatable. By default they are not saved, they live in the moment; but optionally the current state can be stored in the Arduino's memory (Ctrl+Shift+Enter) and restored on power-up. What is always repeatable are the parameters that control the chaos. So it's not made for the musical composer that knows exactly which notes and when does he or she want them, but for the musician that wants to experiment nimbly with certain musical schemes. The system lacks screens and complicated menues, all is allways to the reach of the user. As indicators, the 2 rightmost keyboard LEDs show the current channel in a binary format from 0 to 3 (first to fourth channel). The note-on feedback (which used to blink on a keyboard LED) now comes out of a dedicated Arduino pin (A1), where an external LED can be wired; the third keyboard LED is now free.
 
 For a more didactic introduction, see the next video:
 https://www.youtube.com/watch?v=Qqi9xfu0wNE
@@ -129,15 +138,15 @@ For the electronics, follow the link shown before.
 ## Modus operandi
 In the CV channels, the user activates a grup of notes, through the use of the keyboard, to wich we are calling "scale", and Pepas randomly execute any of those notes. The amount of notes in a scale can be from 1 to 16 notes (could be more if I could manage it, I suspect there is a memory limit issue on the Arduino UNO).
 On the same way, at the square envelope channels, instead of notes, the user selects the length of the duty cycle, from 0% (activating the lowest "note") to 100% (activating the highest "note"). These channels can be used as a clock output for using in other modules, being tempo synchronizable with the rest of the channels. They can also be used as a way to gate other modules.
-There are 2 sequence modes, one of completly random sequences and other of fixed sequences (randomly generated, under user defined parameters). Pepas has also a functionality to slowly mutate fixed sequences, to avoid constant repeat forever. It's way to work is to alter a step of the sequence every time a cycle is completed. Pepas decides whether to alter it or not based on the mutation probability parameter, wich is in 0% by default but the user can set it up to 100% using the potentiometer.
+The step mode is picked with the left/right arrows, cycling: random (default), up, down and ping-pong. In *random* mode Pepas plays a randomly generated sequence (under user defined parameters) that by default repeats fixed ("fixed random"); turning up the change (mutation) probability with the potentiometer regenerates the sequence step by step until it becomes completely random. So a single control spans the whole range between a fixed sequence and a fully random one. In the arpeggio modes (up/down/ping-pong) the scale notes are walked by pitch instead of randomly. Mutation acts in these modes too: turning it up locks in random altered notes over the arpeggio walk, which stick and repeat every cycle (at 0 the arpeggio stays clean and the accumulated pattern freezes; at max it becomes fully random). The mutated pattern persists across chord changes and is only cleared with "BACKSPACE". (There used to be a spacebar toggling between random and fixed sequences; it's gone now — everything lives in this single hierarchy.)
 
 Most important parameters are:
 - The scale (the group of activated notes)
-- The amount of notes in a scale (for the fixed sequences mode)
-- The amount of steps of a sequence (for the fixed sequences mode)
+- The amount of notes in a scale (for the random / sequence mode)
+- The amount of steps of a sequence (for the random / sequence mode)
 - The tempo, settable by BPM, by "tap tempo" or by potentiomenter. It is universal, every channels obey to the same tempo, although relative durations on each channel can be different.
 - The probability of executing a note, settable by potentiometer.
-- The probability of alter a step of a sequence (for the fixed sequences mode)
+- The change (mutation) probability, settable by potentiometer: in random mode it takes the sequence from fixed to fully random; in the arpeggio modes it locks in altered notes over the walk (same control, acts in every mode)
 
 ## Keymap
 - Musical notes (for the CV channels): 34 possible notes are spread through the letters and numbers buttons in this way:
@@ -149,31 +158,40 @@ Most important parameters are:
 - "CAPS LOCK" switches between 2 modes fo executing notes:
   - one in wich the executed notes are the ones that are being phisically pressed
   - other in wich those notes are held active despites of being or not phisically pressed until the first note of a new group of notes is pressed.
-- "SPACEBAR" switches between the random sequences mode and the fixed sequences mode.
-- "BACKSPACE" resets the sequence (for the fixed sequences mode)
-- " ` " (the button to the left of the "1") synchronizes the time on every channels taking the current channel as the master (meaning that it is not altered)
+- "BACKSPACE" regenerates the random-mode sequence (rolls a fresh random pattern) and clears the arpeggio's mutated notes (back to the un-altered walk)
+- " ` " (the button to the left of the "1") synchronizes the phase on every channel taking the current channel as the master (its phase is not altered) and also restarts every channel's sequence head and arpeggio walk (including the current one) so they all start together from the first step
 - Holding "CTRL" the user can:
-  - enter the amount of steps in a fixed sequence, from 1 to 64, using the numpad
+  - enter the amount of steps in the sequence (random mode), from 1 to 64, using the numpad
   - set the tempo using the potentiometer
-  - store a preset (also pressing "F5","F6","F7" or "F8")
 - Holding "ALT" the user can:
   - enter the amount of notes in the scale, from 1 to 16, using the numpad
   - set the notes execution probability through the use of the potentiometer, from 0% to 100%
 - "SHIFT" propagates all to the other channels
 - "UP ARROW" and "DOWN ARROW" changes the octave of the scale (only for CV channels)
-- "ESC" tap tempo (not working currently)
-- "F1" sets the mutation probability parameter (for fixed secuences) through the use of the potentiometer (hold "F1" > work the potentiometer > release "F1")
+- "LEFT ARROW" and "RIGHT ARROW" pick the step mode, cycling: random (default) → up → down → ping-pong. In *random* Pepas plays a randomly generated sequence: by default it stays fixed (repeats, "fixed random") and, by turning up the change (mutation) probability (F1 + potentiometer), it regenerates until it becomes completely random. In the arpeggio modes (up/down/ping-pong) the scale notes are walked by pitch instead of randomly; the note probability still applies, so lowering it produces arpeggios with gaps. Mutation (F1) acts here too: it locks in random altered notes over the arpeggio that repeat every cycle and persist across chord changes (only "BACKSPACE" clears them). With "SHIFT" it propagates to all channels.
+- "ESC" restarts the sequence head and the arpeggio walk of every channel (back to the first step) and doubles as "tap tempo": a single press only restarts, but tapping to the beat several times in a row sets the tempo (average of the last 4 taps, so you can nudge the tempo live). If too long passes between taps, the next one starts a fresh series, so an isolated restart doesn't change the tempo. (Holding "CTRL" it doesn't count as a tap, since there the tempo is handled by the potentiometer.)
+- "F1" sets the change (mutation) probability through the potentiometer; in random mode it takes the sequence from fixed to fully random, and in the arpeggio modes it locks in altered notes over the walk (at 0 the accumulated pattern freezes; only "BACKSPACE" clears it) (hold "F1" > work the potentiometer > release "F1")
 - "F2" sets the tempo in BPM using the numpad (hold "F2" > enter BPM > release "F2")
-- "F5" to "F8" activate stored presets (only scale is stored, maybe in a future more paremeters gets implemented in the presets), this allows for chords progressions (actually, progressions of chord-based arpeggios).
-- " * " and " / " (from the numpad) multiplies or divides (respectively) the relative speed of the sequence steps by an integer number entered through the numpad (hold " * " or " / " > enter a number > release " * " or " / "). By default it's 1, if you multiply it by 2, for instance, 2 notes are executed in the same time that 1 was being executed.
+- " * " and " / " (from the numpad) multiplies or divides (respectively) the relative speed of the sequence steps by an integer number entered through the numpad (hold " * " or " / " > enter a number > release " * " or " / "). By default it's 1, if you multiply it by 2, for instance, 2 notes are executed in the same time that 1 was being executed. The multiplier is capped at 32.
+
+### Recovery, reset and saving
+- "CTRL"+"ALT"+"DEL" (soft reset / panic): silences any notes or gates left stuck and releases the modifiers, without touching sequences, tempo or parameters. The quick way out if something hangs (e.g. a note that won't turn off).
+- "CTRL"+"SHIFT"+"ESC" (factory reset): brings everything back to power-on defaults.
+- "CTRL"+"SHIFT"+"ENTER" (save): stores the current state (sequences, scales, parameters, tempo, channel) in the Arduino's EEPROM. On power-up, Pepas automatically restores the last saved state. The first save freezes the sequence for ~1-2 seconds while writing; later saves are nearly instant.
+- "CTRL"+"SHIFT"+"BACKSPACE" (load): restores the last saved state from EEPROM at any time (the same one loaded on power-up).
+- The keyboard can be hot-unplugged and re-plugged: while disconnected everything keeps playing exactly as it was (nothing resets), and on reconnect you resume control as if nothing happened. The channel LEDs re-sync by themselves.
 
 ## Issues to improve
-- Most urgent issue is to optimize keyboard communication. Maybe try another library.
-- Some keyboards don't work, couldn't identify why. Maybe some protocol issue. Also might be solved using another library.
-- Occasionally it hangs. Maybe lack of enough memory?
-- Occasioanlly scales are not closed and keeps adding notes, sometimes it finally closes the scale when pressing "TAB" 2 times (hence forcing to close the scale, reseting it)
+- Some keyboards don't work, couldn't identify why. Maybe some protocol issue.
 - Tempo is not clock precise, it deviates a little (I suspect that ambient temperature has something to do) although is not so notorious after a few minutes from synchronization. It gets notorious after something like 20-30 minutes, but it is not so likely that someone wants that strong precision after that much time.
-- A good incorporation would be a clock input, to delegate time handling to other more suitable and precise systems.
-- Maybe it would be nice to add a regular arpegio mode, nor tandom, in wich the user could pick from acsending , descending, ping-pong, and other tipes of arpeggios.
-- Maybe a way to store information more permanently, accesible after rebooting the Arduino or after having changed things a lot. Although I'm not sure if this spoils the point of Pepas.
+- Automatic save on power-off would need a hardware change (a brown-out detector + reservoir capacitor) to give the EEPROM time to finish writing; that's why saving is manual for now (Ctrl+Shift+Enter).
 - MIDI/OSC inputs/outputs?
+
+### Already solved
+- Keyboard communication was rewritten (own PS/2 driver with parity and stop-bit validation) and now tolerates bus glitches and hot unplug/replug.
+- The occasional hang: bounds guards were added, plus a panic combo (Ctrl+Alt+Del) to recover without powering off.
+- The scale that "wouldn't close" and kept adding notes: fixed with a note count derived from the real keyboard state.
+- Storing state permanently: now possible (Ctrl+Shift+Enter, restored on power-up).
+- External clock input: implemented (syncs the tempo to an external clock).
+- Unified step mode: left/right arrows cycle random → up → down → ping-pong. The spacebar is gone; random mode now spans from a fixed sequence to fully random via the mutation knob.
+- Mutation now acts in every step mode: in random it morphs from a fixed sequence to fully random, and in the arpeggios it locks in altered notes that repeat every cycle and persist across chord changes (only "BACKSPACE" clears them; the knob at 0 freezes the accumulated pattern).

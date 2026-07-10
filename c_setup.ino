@@ -1,6 +1,9 @@
-void setup() 
+void setup()
 {
-  //pinMode(ledPin, OUTPUT);
+  // Apagar el watchdog apenas arranca: si un reset lo dejo activo, el boot (~10s) es mas largo
+  // que el timeout y entraria en loop de reinicio. Se re-habilita al final de setup().
+  wdt_disable();
+
   pinMode(13, OUTPUT);
   digitalWrite(13, LOW);
   
@@ -30,19 +33,22 @@ void setup()
   digitalWrite(11, LOW);
 
   pinMode(A0, INPUT);
-  
+
+  pinMode(notaLedPin, OUTPUT);      // LED de feedback de nota-on (canal seleccionado)
+  digitalWrite(notaLedPin, LOW);
+
   pinMode(extClockSwitchPin, INPUT);
   pinMode(extClockPin, INPUT_PULLUP);
   clockSwitch = digitalRead(extClockSwitchPin);
   
-  pepas[0] = new Pepa(5, 4, 6, 7, analogRead(A0), 0, 0);
-  pepas[1] = new Pepa(9, 8, 10, 12, analogRead(A0), 0, 1);
-  pepas[2] = new Pepa(11, 11, 11, 11, analogRead(A0), 1, 2);
-  pepas[3] = new Pepa(13, 13, 13, 13, analogRead(A0), 1, 3);
+  pepas[0] = new Pepa(5, 4, 6, 7, 0, 0);
+  pepas[1] = new Pepa(9, 8, 10, 12, 0, 1);
+  pepas[2] = new Pepa(11, 11, 11, 11, 1, 2);
+  pepas[3] = new Pepa(13, 13, 13, 13, 1, 3);
   
   releaseClock();
   releaseData();
-  head = tail = 0;
+  ps2Init();
   attachInterrupt(CLOCK_PIN_INT, ps2int_read, FALLING);
   
   delay(500 * multTemp);
@@ -61,21 +67,26 @@ void setup()
   releaseClock();
   inhibiting = false;
   
-  while (ps2Available()) 
+  while (ps2Available())
   {
     uint8_t Byte = ps2Read();
   }
-  
-  //Serial.begin(115200);
-  //Serial.print("capacidad: ");
-  //Serial.println(capacidad);
-  //Serial.println(pepas[0]->velocidad);
 
-  //prevMillis = millis() / multTemp;
+  cargarEstado();          // recuperar el patch guardado (si hay uno valido) antes de arrancar
+                           // (ya refleja el canal cargado en los LEDs del teclado)
+  actualizarLEDSelector(); // por si no habia patch guardado: reflejar el canal 0 de arranque
+
+  // Watchdog: si el loop se cuelga y no se resetea el WDT en 4s, el micro se reinicia solo.
+  // Se habilita ACA, despues del boot (~10s de animacion + delays): antes lo dispararia.
+  // Timeout holgado (4s) sobre el peor caso del loop, que es el guardado en EEPROM (~1-2s);
+  // igual guardarEstado() hace wdt_reset() entre voces para no arriesgar.
+  wdt_enable(WDTO_4S);
 }
 
-void loop() 
+void loop()
 {
+  wdt_reset(); // patear el watchdog: si el loop sigue vivo, no se reinicia
+
   currentMillis = millis() / multTemp;
   deltaMillis = currentMillis - prevMillis;
 
@@ -130,7 +141,9 @@ void loop()
   }
   
   eventoTeclado();
-  
+
+  notaLedLoop(); // apagar el LED de nota-on cuando venza su parpadeo (no bloqueante)
+
   pote = analogRead(A0);
   
   if(controlarVelocidad == 1)
